@@ -4,7 +4,7 @@
  * Connected to backend running on http://localhost:8000
  */
 
-export const API_BASE_URL = 'http://localhost:8000/api/files';
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/files').replace(/\/+$/, '');
 
 export const SUPPORTED_FORMATS = {
   images: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'ico', 'pdf'],
