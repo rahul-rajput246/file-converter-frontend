@@ -67,8 +67,8 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <a 
-                  href="#privacy" 
+                <a
+                  href="#privacy"
                   onClick={(e) => { e.preventDefault(); alert('Privacy Policy: All temporary uploaded files are automatically expunged after processing.'); }}
                   className="text-muted text-decoration-none hover-primary"
                 >
@@ -76,8 +76,8 @@ function Footer() {
                 </a>
               </li>
               <li>
-                <a 
-                  href="#terms" 
+                <a
+                  href="#terms"
                   onClick={(e) => { e.preventDefault(); alert('Terms: FileFlow is free to use for personal and commercial file transformation.'); }}
                   className="text-muted text-decoration-none hover-primary"
                 >
