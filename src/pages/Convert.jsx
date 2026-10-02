@@ -9,6 +9,7 @@ import ConversionWorkflow from '../components/ConversionWorkflow';
 import PopularConversions from '../components/PopularConversions';
 import { FiRefreshCw } from 'react-icons/fi';
 import { convertFile, downloadFile, formatBytes } from '../services/fileService';
+import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Convert() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -17,7 +18,7 @@ function Convert() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [resultData, setResultData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [recentList, setRecentList] = useState([]);
+  const [recentList, setRecentList] = useState(() => getStoredRecentFiles());
   const uploaderRef = useRef(null);
 
   const handleConvertTrigger = async (conversionData) => {
@@ -53,7 +54,8 @@ function Convert() {
         downloadUrl: data.download_url,
         date: 'Just now'
       };
-      setRecentList((prev) => [newEntry, ...prev]);
+      const updated = saveRecentFile(newEntry);
+      setRecentList(updated);
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Conversion failed on server.');
@@ -145,7 +147,7 @@ function Convert() {
 
         {/* History */}
         <div className="mt-5">
-          <RecentFiles recentList={recentList} />
+          <RecentFiles recentList={recentList} onClear={() => setRecentList([])} />
         </div>
       </div>
     </div>

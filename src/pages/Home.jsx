@@ -14,6 +14,7 @@ import PopularConversions from '../components/PopularConversions';
 import CompressionPresets from '../components/CompressionPresets';
 import { FiRefreshCw, FiMinimize2 } from 'react-icons/fi';
 import { convertFile, compressFile, downloadFile, formatBytes } from '../services/fileService';
+import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -23,24 +24,7 @@ function Home() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [resultData, setResultData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [recentList, setRecentList] = useState([
-    {
-      id: 'f-1',
-      file: 'product-showcase.png',
-      conversion: 'PNG → JPG',
-      size: '2.4 MB',
-      status: 'Completed',
-      date: '10 mins ago'
-    },
-    {
-      id: 'f-2',
-      file: 'camera-raw-photo.jpg',
-      conversion: 'JPG → WEBP',
-      size: '4.1 MB',
-      status: 'Completed',
-      date: '25 mins ago'
-    }
-  ]);
+  const [recentList, setRecentList] = useState(() => getStoredRecentFiles());
 
   const workspaceRef = useRef(null);
   const uploaderRef = useRef(null);
@@ -99,7 +83,8 @@ function Home() {
         downloadUrl: data.download_url,
         date: 'Just now'
       };
-      setRecentList((prev) => [newEntry, ...prev]);
+      const updated = saveRecentFile(newEntry);
+      setRecentList(updated);
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to convert file on server.');
@@ -142,7 +127,8 @@ function Home() {
         downloadUrl: data.download_url,
         date: 'Just now'
       };
-      setRecentList((prev) => [newEntry, ...prev]);
+      const updated = saveRecentFile(newEntry);
+      setRecentList(updated);
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to compress file on server.');
@@ -282,7 +268,7 @@ function Home() {
 
       {/* 3. Recent Files / History */}
       <div className="container my-5">
-        <RecentFiles recentList={recentList} />
+        <RecentFiles recentList={recentList} onClear={() => setRecentList([])} />
       </div>
 
       {/* 4. Features Section */}

@@ -8,6 +8,7 @@ import CompressionWorkflow from '../components/CompressionWorkflow';
 import CompressionPresets from '../components/CompressionPresets';
 import { FiMinimize2 } from 'react-icons/fi';
 import { compressFile, downloadFile, formatBytes } from '../services/fileService';
+import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Compress() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -15,7 +16,7 @@ function Compress() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [resultData, setResultData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [recentList, setRecentList] = useState([]);
+  const [recentList, setRecentList] = useState(() => getStoredRecentFiles());
   const [lastCompressSettings, setLastCompressSettings] = useState({ level: 'medium' });
   const uploaderRef = useRef(null);
 
@@ -56,7 +57,8 @@ function Compress() {
         downloadUrl: data.download_url,
         date: 'Just now'
       };
-      setRecentList((prev) => [newEntry, ...prev]);
+      const updated = saveRecentFile(newEntry);
+      setRecentList(updated);
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Compression failed on server.');
@@ -146,7 +148,7 @@ function Compress() {
 
         {/* History */}
         <div className="mt-5">
-          <RecentFiles recentList={recentList} />
+          <RecentFiles recentList={recentList} onClear={() => setRecentList([])} />
         </div>
       </div>
     </div>

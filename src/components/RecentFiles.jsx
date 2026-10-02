@@ -1,44 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiClock, FiDownload, FiCheckCircle, FiFile, FiTrash2 } from 'react-icons/fi';
 import { downloadFile } from '../services/fileService';
+import { getStoredRecentFiles, clearStoredRecentFiles } from '../utils/historyStorage';
 
-const INITIAL_RECENT_FILES = [
-  {
-    id: 'f-1',
-    file: 'product-showcase.png',
-    conversion: 'PNG → JPG',
-    size: '2.4 MB',
-    status: 'Completed',
-    date: '10 mins ago'
-  },
-  {
-    id: 'f-2',
-    file: 'camera-raw-photo.jpg',
-    conversion: 'JPG → WEBP',
-    size: '4.1 MB',
-    status: 'Completed',
-    date: '25 mins ago'
-  },
-  {
-    id: 'f-3',
-    file: 'sample-image.png',
-    conversion: 'Compress (Medium)',
-    size: '1.2 MB',
-    status: 'Completed',
-    date: '1 hour ago'
-  }
-];
+function RecentFiles({ recentList, onClear }) {
+  const [files, setFiles] = useState(() => {
+    if (Array.isArray(recentList) && recentList.length > 0) {
+      return recentList;
+    }
+    return getStoredRecentFiles();
+  });
 
-function RecentFiles({ recentList = INITIAL_RECENT_FILES }) {
-  const [cleared, setCleared] = useState(false);
-  const files = cleared ? [] : recentList;
+  useEffect(() => {
+    if (Array.isArray(recentList)) {
+      setFiles(recentList);
+    }
+  }, [recentList]);
+
+  useEffect(() => {
+    const handleHistoryChanged = (event) => {
+      setFiles(event.detail || getStoredRecentFiles());
+    };
+    window.addEventListener('fileflow_history_changed', handleHistoryChanged);
+    return () => {
+      window.removeEventListener('fileflow_history_changed', handleHistoryChanged);
+    };
+  }, []);
 
   const handleDownload = (row) => {
     downloadFile(row.downloadUrl || row.filename || row.id);
   };
 
   const handleClearHistory = () => {
-    setCleared(true);
+    clearStoredRecentFiles();
+    setFiles([]);
+    if (onClear) onClear();
   };
 
   return (
