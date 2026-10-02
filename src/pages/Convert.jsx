@@ -5,6 +5,7 @@ import FileInfo from '../components/FileInfo';
 import ProcessingStatus from '../components/ProcessingStatus';
 import SupportedFormats from '../components/SupportedFormats';
 import RecentFiles from '../components/RecentFiles';
+import ConversionWorkflow from '../components/ConversionWorkflow';
 import { FiRefreshCw } from 'react-icons/fi';
 import { convertFile, downloadFile, formatBytes } from '../services/fileService';
 
@@ -124,33 +125,8 @@ function Convert() {
               outputSize={resultData?.size}
             />
 
-            {/* Conversion Steps Card */}
-            <div className="card custom-card p-4 shadow-sm text-start">
-              <h5 className="fw-bold mb-3">How it works</h5>
-              <div className="d-flex flex-column gap-3">
-                <div className="d-flex align-items-start gap-2">
-                  <span className="badge bg-primary rounded-circle p-2 px-3">1</span>
-                  <div>
-                    <div className="fw-semibold small">Upload File</div>
-                    <div className="text-muted smaller">Select or drag &amp; drop your JPG, PNG, WEBP, AVIF, GIF, BMP, or ICO file up to 100 MB.</div>
-                  </div>
-                </div>
-                <div className="d-flex align-items-start gap-2">
-                  <span className="badge bg-primary rounded-circle p-2 px-3">2</span>
-                  <div>
-                    <div className="fw-semibold small">Select Target Format</div>
-                    <div className="text-muted smaller">Choose target extension (JPG, PNG, WEBP, AVIF, GIF, BMP, ICO, or PDF).</div>
-                  </div>
-                </div>
-                <div className="d-flex align-items-start gap-2">
-                  <span className="badge bg-primary rounded-circle p-2 px-3">3</span>
-                  <div>
-                    <div className="fw-semibold small">Download Result</div>
-                    <div className="text-muted smaller">Get your converted file ready in seconds.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* High-Speed Conversion Pipeline Card */}
+            <ConversionWorkflow />
           </div>
         </div>
 

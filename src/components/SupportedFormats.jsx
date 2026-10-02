@@ -1,37 +1,40 @@
-import { FiImage, FiFileText, FiArchive } from 'react-icons/fi';
+import { FiImage, FiFileText, FiArchive, FiVideo, FiMusic } from 'react-icons/fi';
 
 const FORMAT_CATEGORIES = [
   {
-    category: 'Images',
+    category: 'Images & Graphics',
     icon: <FiImage className="text-primary" size={20} />,
     formats: [
       { name: 'WEBP', desc: 'Modern High Compression' },
-      { name: 'AVIF', desc: 'Ultra Next-Gen Quality' },
+      { name: 'AVIF', desc: 'Next-Gen Ultra Quality' },
       { name: 'PNG', desc: 'Lossless & Transparency' },
-      { name: 'JPG', desc: 'Universal Photo Format' },
-      { name: 'GIF', desc: 'Graphics & Animations' },
-      { name: 'ICO', desc: 'Icons & Favicons' },
+      { name: 'JPG', desc: 'Standard Photo Format' },
+      { name: 'GIF', desc: 'Clean 256-Color Graphics' },
+      { name: 'ICO', desc: 'Multi-Res Favicon Stream' },
       { name: 'BMP', desc: 'Standard Windows Bitmap' }
     ]
   },
   {
-    category: 'Documents',
-    icon: <FiFileText className="text-danger" size={20} />,
+    category: 'Video & Animation',
+    icon: <FiVideo className="text-info" size={20} />,
     formats: [
-      { name: 'PDF', desc: 'Portable Document' },
-      { name: 'DOCX', desc: 'Word Processing' },
-      { name: 'XLSX', desc: 'Excel Spreadsheet' },
-      { name: 'TXT', desc: 'Plain Text' }
+      { name: 'MP4', desc: 'H.264 Universal Video' },
+      { name: 'WEBM', desc: 'VP9 Web-Optimized Stream' },
+      { name: 'MOV', desc: 'Apple QuickTime Container' },
+      { name: 'AVI', desc: 'Legacy Windows Video' },
+      { name: 'MKV', desc: 'Matroska Open Container' },
+      { name: 'GIF', desc: 'True Animated Looping GIF' }
     ]
   },
   {
-    category: 'Archives & Media',
-    icon: <FiArchive className="text-warning" size={20} />,
+    category: 'Audio & Music',
+    icon: <FiMusic className="text-success" size={20} />,
     formats: [
-      { name: 'ZIP', desc: 'Standard Archive' },
-      { name: 'RAR', desc: 'Compressed Archive' },
-      { name: 'MP3', desc: 'Audio Stream' },
-      { name: 'MP4', desc: 'HD Video' }
+      { name: 'MP3', desc: 'Universal Audio Soundtrack' },
+      { name: 'WAV', desc: 'Lossless Studio Audio' },
+      { name: 'OGG', desc: 'Vorbis Open Audio Stream' },
+      { name: 'AAC', desc: 'High Quality Compressed' },
+      { name: 'PDF', desc: 'Vector & Raster Document' }
     ]
   }
 ];

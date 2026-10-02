@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiImage, FiZap, FiMinimize2, FiSliders, FiFileText, FiShield } from 'react-icons/fi';
 
-const SUPPORTED_PILLS = ['WEBP', 'AVIF', 'PNG', 'JPG', 'PDF', 'ICO', 'GIF', 'BMP'];
+const SUPPORTED_PILLS = ['WEBP', 'AVIF', 'PNG', 'JPG', 'GIF', 'MP4', 'WEBM', 'MOV', 'MP3', 'WAV', 'PDF', 'ICO'];
 
 function Hero({ onGetStartedClick }) {
   return (
@@ -12,15 +12,15 @@ function Hero({ onGetStartedClick }) {
           <div className="col-12 col-lg-6 text-center text-lg-start">
             <div className="badge-pill mb-3 mx-auto ms-lg-0">
               <span className="pulse-dot"></span>
-              <span>Next-Gen Image &amp; Document Engine</span>
+              <span>Enterprise-Grade Image &amp; Media Engine</span>
             </div>
 
             <h1 className="hero-title fw-bold mb-3">
-              Transform &amp; Compress Files at <span className="text-primary-gradient">Light Speed</span>
+              Transform, Compress &amp; Convert Files at <span className="text-primary-gradient">Light Speed</span>
             </h1>
 
             <p className="hero-subtitle text-muted mb-4 mx-auto ms-lg-0" style={{ maxWidth: '520px' }}>
-              Real-time transcoding across <strong>8 formats</strong> with zero quality degradation. Built with high-performance Laravel image processing and instant downloads.
+              High-throughput transcoding across <strong>16+ formats</strong> with zero quality degradation. Dual-engine processing with hardware-accelerated FFmpeg &amp; Laravel stream pipelines.
             </p>
 
             {/* Quick Format Ticker Pills */}

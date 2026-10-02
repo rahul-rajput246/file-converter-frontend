@@ -8,6 +8,8 @@ import ProcessingStatus from '../components/ProcessingStatus';
 import RecentFiles from '../components/RecentFiles';
 import Features from '../components/Features';
 import SupportedFormats from '../components/SupportedFormats';
+import ConversionWorkflow from '../components/ConversionWorkflow';
+import CompressionWorkflow from '../components/CompressionWorkflow';
 import { FiRefreshCw, FiMinimize2 } from 'react-icons/fi';
 import { convertFile, compressFile, downloadFile, formatBytes } from '../services/fileService';
 
@@ -249,6 +251,9 @@ function Home() {
                 isCompressMode={activeTab === 'compress'}
                 outputSize={resultData?.processed_size || resultData?.size}
               />
+
+              {/* Dynamic Processing Architecture & Stepper */}
+              {activeTab === 'convert' ? <ConversionWorkflow /> : <CompressionWorkflow />}
             </div>
           </div>
         </div>

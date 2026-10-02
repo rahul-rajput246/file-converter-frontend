@@ -4,7 +4,8 @@ import CompressionSettings from '../components/CompressionSettings';
 import FileInfo from '../components/FileInfo';
 import ProcessingStatus from '../components/ProcessingStatus';
 import RecentFiles from '../components/RecentFiles';
-import { FiMinimize2, FiCheck, FiTrendingDown } from 'react-icons/fi';
+import CompressionWorkflow from '../components/CompressionWorkflow';
+import { FiMinimize2 } from 'react-icons/fi';
 import { compressFile, downloadFile, formatBytes } from '../services/fileService';
 
 function Compress() {
@@ -128,27 +129,8 @@ function Compress() {
               outputSize={resultData?.processed_size}
             />
 
-            {/* Benefits & Tips Card */}
-            <div className="card custom-card p-4 shadow-sm text-start">
-              <h5 className="fw-bold mb-3 d-flex align-items-center gap-2">
-                <FiTrendingDown className="text-success" />
-                <span>Why Compress with FileFlow?</span>
-              </h5>
-              <ul className="list-unstyled d-flex flex-column gap-3 mb-0 small text-muted">
-                <li className="d-flex align-items-start gap-2">
-                  <FiCheck className="text-success flex-shrink-0 mt-1" />
-                  <span><strong>Lightning-fast web uploads:</strong> Smaller assets load faster on client websites and apps.</span>
-                </li>
-                <li className="d-flex align-items-start gap-2">
-                  <FiCheck className="text-success flex-shrink-0 mt-1" />
-                  <span><strong>Email attachments ready:</strong> Overcome rigid 25 MB email payload barriers easily.</span>
-                </li>
-                <li className="d-flex align-items-start gap-2">
-                  <FiCheck className="text-success flex-shrink-0 mt-1" />
-                  <span><strong>Lossless &amp; smart lossy:</strong> Advanced quantization preserves metadata and crisp edges.</span>
-                </li>
-              </ul>
-            </div>
+            {/* Compression Engine Architecture Card */}
+            <CompressionWorkflow />
           </div>
         </div>
 
