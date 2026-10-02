@@ -95,7 +95,7 @@ function Footer() {
             </p>
             <div className="d-inline-flex align-items-center gap-2 badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill">
               <span className="pulse-dot"></span>
-              <span className="fw-semibold">Engine Active (Port 8000)</span>
+              <span className="fw-semibold">Engine Online (REST API)</span>
             </div>
           </div>
         </div>

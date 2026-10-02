@@ -50,11 +50,18 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
   font-family: var(--font-family);
   background-color: var(--bg-color);
   background-image: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 350px);
@@ -66,10 +73,18 @@ body {
   flex-direction: column;
 }
 
-#root {
+#root, .app-layout {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.container, .container-fluid {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
@@ -490,9 +505,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   Mobile Responsive Refinements
+   Mobile Responsive Refinements & Anti-Overflow Protection
    ========================================================================== */
 @media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
   .hero-subtitle {
     font-size: 1.05rem;
   }
@@ -500,10 +519,11 @@ h1, h2, h3, h4, h5, h6 {
   .custom-card {
     padding: 1.25rem !important;
     border-radius: 14px;
+    max-width: 100%;
   }
 
   .dropzone-area {
-    padding: 2rem 1rem !important;
+    padding: 1.75rem 1rem !important;
   }
 
   .navbar-nav {
@@ -512,5 +532,58 @@ h1, h2, h3, h4, h5, h6 {
 
   .custom-nav-link {
     padding: 8px 12px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-title {
+    font-size: 1.85rem;
+    line-height: 1.2;
+  }
+
+  .nav-tab-pill-box {
+    width: 100%;
+    display: flex !important;
+    max-width: 100%;
+  }
+
+  .nav-tab-pill-box .btn-pill-tab {
+    flex: 1;
+    padding: 8px 8px !important;
+    font-size: 0.85rem !important;
+    justify-content: center;
+  }
+
+  .hero-visual-card {
+    padding: 1rem !important;
+    border-radius: 16px;
+  }
+
+  .visual-file-node {
+    padding: 0.65rem !important;
+    border-radius: 12px;
+  }
+
+  .pulse-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .connector-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    margin-left: 6px;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  .badge-pill {
+    font-size: 0.76rem;
+    padding: 5px 10px;
+    white-space: normal;
+    text-align: center;
   }
 }

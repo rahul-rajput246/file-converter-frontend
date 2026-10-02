@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { FiLayers, FiMenu, FiX, FiArrowRight, FiZap } from 'react-icons/fi';
+import { FiLayers, FiMenu, FiX, FiZap } from 'react-icons/fi';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,7 +90,6 @@ function Navbar() {
             >
               <FiZap size={16} />
               <span>Convert Now</span>
-              <FiArrowRight size={16} />
             </Link>
           </div>
         </div>

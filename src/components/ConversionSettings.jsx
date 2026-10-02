@@ -131,7 +131,7 @@ function ConversionSettings({ selectedFile, onConvertTrigger }) {
         onClick={handleConvertClick}
       >
         <FiRefreshCw size={18} />
-        <span>Convert {fileExt} → {activeTarget}</span>
+        <span>Convert to {activeTarget}</span>
       </button>
     </div>
   );
