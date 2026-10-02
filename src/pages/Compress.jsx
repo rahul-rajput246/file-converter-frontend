@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import FileUploader from '../components/FileUploader';
 import CompressionSettings from '../components/CompressionSettings';
 import FileInfo from '../components/FileInfo';
 import ProcessingStatus from '../components/ProcessingStatus';
 import RecentFiles from '../components/RecentFiles';
 import CompressionWorkflow from '../components/CompressionWorkflow';
+import CompressionPresets from '../components/CompressionPresets';
 import { FiMinimize2 } from 'react-icons/fi';
 import { compressFile, downloadFile, formatBytes } from '../services/fileService';
 
@@ -16,6 +17,7 @@ function Compress() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [recentList, setRecentList] = useState([]);
   const [lastCompressSettings, setLastCompressSettings] = useState({ level: 'medium' });
+  const uploaderRef = useRef(null);
 
   const handleCompressTrigger = async (compressData) => {
     if (!selectedFile?.fileInstance) {
@@ -81,6 +83,7 @@ function Compress() {
         <div className="row g-4 justify-content-center mb-5">
           <div className="col-12 col-lg-7">
             <FileUploader
+              ref={uploaderRef}
               selectedFile={selectedFile}
               onFileSelect={(file) => {
                 setSelectedFile(file);
@@ -96,11 +99,18 @@ function Compress() {
               }}
             />
 
-            {selectedFile && (
+            {selectedFile ? (
               <CompressionSettings
                 key={`${selectedFile.name}_${selectedFile.size}`}
                 selectedFile={selectedFile}
                 onCompressTrigger={handleCompressTrigger}
+              />
+            ) : (
+              <CompressionPresets
+                onSelectPreset={(level) => {
+                  setLastCompressSettings({ level });
+                  uploaderRef.current?.openFilePicker();
+                }}
               />
             )}
 

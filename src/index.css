@@ -643,6 +643,30 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-secondary);
 }
 
+.preset-card-btn {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 11px 13px;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  width: 100%;
+  display: block;
+  text-decoration: none;
+}
+
+.preset-card-btn:hover {
+  background: #f8fafc;
+  border-color: rgba(79, 70, 229, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.preset-card-btn:active {
+  transform: translateY(0);
+}
+
 /* ==========================================================================
    Mobile Responsive Refinements & Anti-Overflow Protection
    ========================================================================== */

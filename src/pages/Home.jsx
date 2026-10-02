@@ -10,6 +10,8 @@ import Features from '../components/Features';
 import SupportedFormats from '../components/SupportedFormats';
 import ConversionWorkflow from '../components/ConversionWorkflow';
 import CompressionWorkflow from '../components/CompressionWorkflow';
+import PopularConversions from '../components/PopularConversions';
+import CompressionPresets from '../components/CompressionPresets';
 import { FiRefreshCw, FiMinimize2 } from 'react-icons/fi';
 import { convertFile, compressFile, downloadFile, formatBytes } from '../services/fileService';
 
@@ -41,6 +43,7 @@ function Home() {
   ]);
 
   const workspaceRef = useRef(null);
+  const uploaderRef = useRef(null);
 
   const scrollToWorkspace = () => {
     if (workspaceRef.current) {
@@ -200,6 +203,7 @@ function Home() {
             <div className="col-12 col-lg-7">
               {/* Main File Upload Area */}
               <FileUploader
+                ref={uploaderRef}
                 selectedFile={selectedFile}
                 onFileSelect={handleFileSelect}
                 onFileRemove={handleFileRemove}
@@ -217,6 +221,23 @@ function Home() {
                 <CompressionSettings
                   selectedFile={selectedFile}
                   onCompressTrigger={handleCompressTrigger}
+                />
+              )}
+
+              {!selectedFile && activeTab === 'convert' && (
+                <PopularConversions
+                  onSelectPreset={(target) => {
+                    setTargetFormat(target);
+                    uploaderRef.current?.openFilePicker();
+                  }}
+                />
+              )}
+
+              {!selectedFile && activeTab === 'compress' && (
+                <CompressionPresets
+                  onSelectPreset={(_level) => {
+                    uploaderRef.current?.openFilePicker();
+                  }}
                 />
               )}
 

@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { FiUploadCloud, FiFile, FiTrash2, FiAlertCircle, FiCheck, FiFileText, FiImage, FiArchive, FiVideo, FiMusic } from 'react-icons/fi';
 import { formatBytes, getFileExtension, getFriendlyFileType, validateFile } from '../services/fileService';
 
-function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
+const FileUploader = forwardRef(function FileUploader({ selectedFile, onFileSelect, onFileRemove }, ref) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const fileInputRef = useRef(null);
@@ -66,6 +66,10 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
       fileInputRef.current.click();
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    openFilePicker: handleChooseFileClick
+  }));
 
   const getFileIcon = (ext) => {
     const lower = (ext || '').toLowerCase();
@@ -211,6 +215,6 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
       )}
     </div>
   );
-}
+});
 
 export default FileUploader;

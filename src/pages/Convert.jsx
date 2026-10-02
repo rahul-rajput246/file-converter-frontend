@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import FileUploader from '../components/FileUploader';
 import ConversionSettings from '../components/ConversionSettings';
 import FileInfo from '../components/FileInfo';
@@ -6,6 +6,7 @@ import ProcessingStatus from '../components/ProcessingStatus';
 import SupportedFormats from '../components/SupportedFormats';
 import RecentFiles from '../components/RecentFiles';
 import ConversionWorkflow from '../components/ConversionWorkflow';
+import PopularConversions from '../components/PopularConversions';
 import { FiRefreshCw } from 'react-icons/fi';
 import { convertFile, downloadFile, formatBytes } from '../services/fileService';
 
@@ -17,6 +18,7 @@ function Convert() {
   const [resultData, setResultData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [recentList, setRecentList] = useState([]);
+  const uploaderRef = useRef(null);
 
   const handleConvertTrigger = async (conversionData) => {
     if (!selectedFile?.fileInstance) {
@@ -78,6 +80,7 @@ function Convert() {
         <div className="row g-4 justify-content-center mb-5">
           <div className="col-12 col-lg-7">
             <FileUploader
+              ref={uploaderRef}
               selectedFile={selectedFile}
               onFileSelect={(file) => {
                 setSelectedFile(file);
@@ -93,10 +96,17 @@ function Convert() {
               }}
             />
 
-            {selectedFile && (
+            {selectedFile ? (
               <ConversionSettings
                 selectedFile={selectedFile}
                 onConvertTrigger={handleConvertTrigger}
+              />
+            ) : (
+              <PopularConversions
+                onSelectPreset={(target) => {
+                  setTargetFormat(target);
+                  uploaderRef.current?.openFilePicker();
+                }}
               />
             )}
 
