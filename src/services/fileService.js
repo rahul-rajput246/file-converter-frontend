@@ -61,10 +61,28 @@ export const getFriendlyFileType = (file) => {
  */
 export const getTargetConversionOptions = (inputExtension) => {
   const ext = (inputExtension || '').toLowerCase();
-  const all = ['JPG', 'PNG', 'WEBP', 'AVIF', 'GIF', 'BMP', 'ICO', 'PDF'];
+  const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp', 'm4v'];
+  const audioExts = ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a'];
+  const imageExts = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'ico'];
+
+  let options = [];
+  if (videoExts.includes(ext)) {
+    // Video: primary targets are Animated GIF, Web Video, or extracted Audio/Snapshot
+    options = ['GIF', 'MP4', 'WEBM', 'MP3', 'WAV', 'PNG', 'JPG'];
+  } else if (audioExts.includes(ext)) {
+    options = ['MP3', 'WAV', 'OGG', 'AAC'];
+  } else if (imageExts.includes(ext)) {
+    // Images: Animated GIF is a prime option, plus standard image formats & video clip
+    options = ['GIF', 'JPG', 'PNG', 'WEBP', 'AVIF', 'BMP', 'ICO', 'PDF', 'MP4'];
+  } else if (ext === 'pdf') {
+    options = ['JPG', 'PNG', 'WEBP'];
+  } else {
+    options = ['GIF', 'JPG', 'PNG', 'WEBP', 'MP4', 'MP3', 'PDF'];
+  }
+
   const normalizedCurrent = ext === 'jpeg' ? 'jpg' : ext;
   
-  return all.filter(f => {
+  return options.filter(f => {
     const norm = f.toLowerCase() === 'jpeg' ? 'jpg' : f.toLowerCase();
     return norm !== normalizedCurrent;
   });
@@ -85,13 +103,18 @@ export const validateFile = (file) => {
     };
   }
 
-  const ext = getFileExtension(file.name);
-  const supported = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'ico'];
+  const ext = getFileExtension(file.name).toLowerCase();
+  const supported = [
+    'jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'ico',
+    'mp4', 'webm', 'mov', 'avi', 'mkv', '3gp', 'm4v',
+    'mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a',
+    'pdf'
+  ];
   
   if (ext && !supported.includes(ext)) {
     return {
       valid: false,
-      error: `The file format .${ext} is not supported. Supported image formats: JPG, PNG, WEBP, AVIF, GIF, BMP, ICO.`
+      error: `The file format .${ext} is not supported. Supported: Images (JPG, PNG, WebP, GIF, AVIF, BMP, ICO), Videos (MP4, WEBM, MOV, AVI, MKV), and Audio (MP3, WAV, OGG, AAC).`
     };
   }
 

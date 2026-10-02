@@ -3,11 +3,17 @@ import { FiRefreshCw, FiArrowRight, FiSliders, FiCheck } from 'react-icons/fi';
 import { getTargetConversionOptions } from '../services/fileService';
 
 const FORMAT_METADATA = {
+  GIF: { label: 'Animated GIF', desc: 'Real Looping Animated GIF', tag: 'Animated' },
+  MP4: { label: 'MP4 Video', desc: 'H.264 Universal Video Stream', tag: 'Video' },
+  WEBM: { label: 'WebM Video', desc: 'Modern Web-Optimized Video', tag: 'Video' },
+  MP3: { label: 'MP3 Audio', desc: 'Universal Sound / Audio Track', tag: 'Audio' },
+  WAV: { label: 'WAV Audio', desc: 'Uncompressed Studio Quality', tag: 'Audio' },
+  OGG: { label: 'OGG Vorbis', desc: 'Open Source Audio Stream', tag: 'Audio' },
+  AAC: { label: 'AAC Audio', desc: 'High Quality Compressed Audio', tag: 'Audio' },
   WEBP: { label: 'WebP', desc: 'Modern Web, High Compression', tag: 'Recommended' },
   PNG: { label: 'PNG', desc: 'Lossless & Transparency', tag: 'Popular' },
   JPG: { label: 'JPG / JPEG', desc: 'Standard Photo Format', tag: 'Standard' },
   AVIF: { label: 'AVIF', desc: 'Next-Gen Superior Quality', tag: 'Next-Gen' },
-  GIF: { label: 'GIF', desc: 'Graphics & Animations', tag: 'Media' },
   BMP: { label: 'BMP', desc: 'Uncompressed Bitmap', tag: 'Legacy' },
   ICO: { label: 'ICO', desc: 'Windows & Web Favicon (256px)', tag: 'Icon' },
   PDF: { label: 'PDF', desc: 'Printable Document Stream', tag: 'Document' },

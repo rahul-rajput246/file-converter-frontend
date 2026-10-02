@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FiUploadCloud, FiFile, FiTrash2, FiAlertCircle, FiCheck, FiFileText, FiImage, FiArchive } from 'react-icons/fi';
+import { FiUploadCloud, FiFile, FiTrash2, FiAlertCircle, FiCheck, FiFileText, FiImage, FiArchive, FiVideo, FiMusic } from 'react-icons/fi';
 import { formatBytes, getFileExtension, getFriendlyFileType, validateFile } from '../services/fileService';
 
 function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
@@ -69,7 +69,13 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
 
   const getFileIcon = (ext) => {
     const lower = (ext || '').toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(lower)) {
+    if (['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'].includes(lower)) {
+      return <FiVideo className="text-info" size={32} />;
+    }
+    if (['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a'].includes(lower)) {
+      return <FiMusic className="text-success" size={32} />;
+    }
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp', 'ico'].includes(lower)) {
       return <FiImage className="text-primary" size={32} />;
     }
     if (['zip', 'rar', 'tar', '7z'].includes(lower)) {
@@ -105,6 +111,7 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
         onChange={handleFileInputChange}
         className="d-none"
         aria-label="Upload File"
+        accept="image/*,video/*,audio/*,.pdf,.zip"
       />
 
       {!selectedFile ? (
@@ -143,15 +150,15 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
 
           <div className="dropzone-footer pt-3 border-top border-light">
             <div className="d-flex flex-wrap justify-content-center align-items-center gap-1.5 mb-2">
-              <span className="text-muted smaller fw-semibold me-1">Accepted Formats:</span>
-              {['JPG', 'PNG', 'WEBP', 'AVIF', 'GIF', 'BMP', 'ICO'].map((ext) => (
+              <span className="text-muted smaller fw-semibold me-1">Supported:</span>
+              {['JPG', 'PNG', 'WEBP', 'GIF', 'MP4', 'WEBM', 'MOV', 'MP3', 'WAV', 'PDF'].map((ext) => (
                 <span key={ext} className="badge bg-white text-secondary border px-2 py-0.5 rounded shadow-xs" style={{ fontSize: '0.72rem' }}>
                   .{ext.toLowerCase()}
                 </span>
               ))}
             </div>
             <span className="text-secondary smaller text-muted d-block">
-              Maximum file size: <strong>100 MB</strong> • Real transcoding into <strong>8 Formats</strong> including PDF
+              Max file size: <strong>100 MB</strong> • Genuine animated looping <strong>GIF</strong> creation from Video &amp; Images
             </span>
           </div>
         </div>
