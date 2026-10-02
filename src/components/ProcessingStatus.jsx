@@ -81,32 +81,32 @@ function ProcessingStatus({
 
       {/* Completed State */}
       {status === 'completed' && (
-        <div className="text-center py-4">
-          <div className="success-icon-box mx-auto mb-3">
-            <FiCheckCircle size={44} />
+        <div className="text-center py-3 py-sm-4">
+          <div className="success-icon-box mx-auto mb-2.5">
+            <FiCheckCircle size={30} />
           </div>
-          <h4 className="fw-bold text-success mb-2 fs-4">File Ready for Download!</h4>
-          <p className="text-muted mb-2">
+          <h4 className="fw-bold text-success mb-1.5 fs-5">File Ready for Download!</h4>
+          <p className="text-muted small mb-2">
             Your file was successfully processed and optimized with high precision.
           </p>
           {outputFileName && (
-            <div className="small text-muted mb-3 font-monospace bg-light p-2 rounded-3 d-inline-block border">
+            <div className="smaller text-muted mb-3 font-monospace bg-light p-1.5 px-3 rounded-3 d-inline-block border">
               {outputFileName}
             </div>
           )}
 
           {processedSize && (
-            <div className="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 bg-light p-2.5 px-4 rounded-pill border mb-4 shadow-xs">
+            <div className="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 bg-light p-2 px-3 rounded-3 border mb-3 shadow-xs">
               {originalSize && (
-                <span className="small text-muted text-decoration-line-through">
+                <span className="smaller text-muted text-decoration-line-through">
                   Original: {formatBytes(originalSize)}
                 </span>
               )}
-              <span className="small fw-bold text-dark fs-6">
+              <span className="small fw-bold text-dark">
                 Optimized: {formatBytes(processedSize)}
               </span>
               {percentSaved > 0 && (
-                <span className="badge bg-success text-white small px-2 py-1 rounded-pill">
+                <span className="badge bg-success text-white smaller px-2 py-0.5 rounded-pill">
                   <FiTrendingDown className="me-1" />
                   {percentSaved}% smaller
                 </span>
@@ -114,21 +114,21 @@ function ProcessingStatus({
             </div>
           )}
 
-          <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
+          <div className="d-flex flex-column flex-sm-row justify-content-center gap-2.5 mt-2">
             <button
               type="button"
-              className="btn btn-success btn-lg px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm fw-bold fs-6"
+              className="btn btn-success px-4 py-2.5 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm fw-bold"
               style={{ background: 'var(--success-gradient)', border: 'none' }}
               onClick={handleDownloadClick}
             >
-              <FiDownload size={20} />
+              <FiDownload size={18} />
               <span>Download Processed File</span>
             </button>
 
             {onReset && (
               <button
                 type="button"
-                className="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold"
+                className="btn btn-outline-secondary px-3.5 py-2.5 fw-semibold"
                 onClick={onReset}
               >
                 Process Another File

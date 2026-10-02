@@ -255,10 +255,10 @@ function CompressionSettings({ selectedFile, onCompressTrigger }) {
       {/* Action Button */}
       <button
         type="button"
-        className="btn btn-primary-custom btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+        className="btn btn-primary-custom w-100 py-2.5 d-flex align-items-center justify-content-center gap-2 shadow-sm fs-6 fw-bold"
         onClick={handleCompressClick}
       >
-        <FiMinimize2 size={18} />
+        <FiMinimize2 size={16} />
         <span>
           {compressMode === 'target'
             ? `Compress File to ${targetSize} ${unit}`

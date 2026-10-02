@@ -85,6 +85,25 @@ body {
 .container, .container-fluid {
   max-width: 100%;
   box-sizing: border-box;
+  padding-right: 1.25rem !important;
+  padding-left: 1.25rem !important;
+}
+
+@media (min-width: 768px) {
+  .container, .container-fluid {
+    padding-right: 1.5rem !important;
+    padding-left: 1.5rem !important;
+  }
+}
+
+.row {
+  margin-right: -0.5rem;
+  margin-left: -0.5rem;
+}
+
+.row > * {
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
 }
 
 /* ==========================================================================
@@ -117,12 +136,12 @@ h1, h2, h3, h4, h5, h6 {
 .badge-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background-color: #e0e7ff;
   color: #3730a3;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
   border: 1px solid #c7d2fe;
 }
@@ -130,13 +149,13 @@ h1, h2, h3, h4, h5, h6 {
 .badge-pill-live {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background-color: #ecfdf5;
   color: #065f46;
   border: 1px solid #a7f3d0;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
 }
 
@@ -154,7 +173,9 @@ h1, h2, h3, h4, h5, h6 {
 .btn {
   font-family: var(--font-family);
   font-weight: 600;
-  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border-radius: 8px;
+  letter-spacing: -0.01em;
   transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -163,13 +184,15 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff !important;
   border: none;
   font-weight: 600;
-  border-radius: 10px;
-  box-shadow: var(--shadow-glow);
+  font-size: 0.9rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.22);
 }
 
 .btn-primary-custom:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px 0 rgba(79, 70, 229, 0.4);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.32);
   color: #ffffff !important;
 }
 
@@ -182,13 +205,17 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-main);
   border: 1px solid var(--border-light);
   font-weight: 600;
-  border-radius: 10px;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-outline-custom:hover {
-  background: #f1f5f9;
+  background: #f8fafc;
   border-color: #cbd5e1;
   color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
@@ -309,33 +336,37 @@ h1, h2, h3, h4, h5, h6 {
    Hero Section & Interactive Visual Card
    ========================================================================== */
 .hero-title {
-  font-size: 3.2rem;
-  line-height: 1.15;
+  font-size: 2.5rem;
+  line-height: 1.18;
   letter-spacing: -0.03em;
+  font-weight: 800;
 }
 
 @media (max-width: 991px) {
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 1.95rem;
+    line-height: 1.2;
   }
 }
 
 @media (max-width: 576px) {
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
   }
 }
 
 .hero-visual-card {
   background: #ffffff;
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
 }
 
 .visual-file-node {
   border: 1px solid #e2e8f0;
   background: #ffffff;
+  border-radius: 10px;
   transition: transform 0.15s ease;
 }
 
@@ -344,8 +375,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .pulse-circle {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #eef2ff;
   border: 2px solid #6366f1;
@@ -354,22 +385,22 @@ h1, h2, h3, h4, h5, h6 {
 .connector-badge {
   background: var(--success-gradient);
   color: #ffffff;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .floating-badge {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   background: #ffffff;
   border: 1px solid var(--border-light);
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -383,7 +414,8 @@ h1, h2, h3, h4, h5, h6 {
   border: 2px dashed #cbd5e1;
   background: #ffffff;
   cursor: pointer;
-  border-radius: 16px;
+  border-radius: 14px;
+  padding: 2.25rem 1.5rem;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
@@ -394,9 +426,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dropzone-icon-box {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
   background: #e0e7ff;
   display: flex;
   align-items: center;
@@ -406,7 +438,7 @@ h1, h2, h3, h4, h5, h6 {
 .selected-file-card {
   background: #ffffff;
   border: 1px solid var(--border-light);
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 /* ==========================================================================
@@ -415,11 +447,13 @@ h1, h2, h3, h4, h5, h6 {
 .nav-tab-pill-box {
   background: #f1f5f9;
   border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
 }
 
 .btn-pill-tab {
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: var(--radius-pill);
 }
 
 /* ==========================================================================
@@ -435,8 +469,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .success-icon-box {
-  width: 70px;
-  height: 70px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   background: #ecfdf5;
   color: var(--success-color);
@@ -509,36 +543,36 @@ h1, h2, h3, h4, h5, h6 {
    ========================================================================== */
 @media (max-width: 768px) {
   .hero-title {
-    font-size: 2.2rem;
+    font-size: 1.85rem;
   }
 
   .hero-subtitle {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
   
   .custom-card {
-    padding: 1.25rem !important;
-    border-radius: 14px;
+    padding: 1.15rem !important;
+    border-radius: 12px;
     max-width: 100%;
   }
 
   .dropzone-area {
-    padding: 1.75rem 1rem !important;
+    padding: 1.5rem 1rem !important;
   }
 
   .navbar-nav {
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
   }
 
   .custom-nav-link {
-    padding: 8px 12px !important;
+    padding: 6px 12px !important;
   }
 }
 
 @media (max-width: 576px) {
   .hero-title {
-    font-size: 1.85rem;
-    line-height: 1.2;
+    font-size: 1.5rem;
+    line-height: 1.25;
   }
 
   .nav-tab-pill-box {
@@ -549,40 +583,35 @@ h1, h2, h3, h4, h5, h6 {
 
   .nav-tab-pill-box .btn-pill-tab {
     flex: 1;
-    padding: 8px 8px !important;
-    font-size: 0.85rem !important;
+    padding: 7px 8px !important;
+    font-size: 0.82rem !important;
     justify-content: center;
   }
 
   .hero-visual-card {
-    padding: 1rem !important;
-    border-radius: 16px;
+    padding: 0.85rem !important;
+    border-radius: 14px;
   }
 
   .visual-file-node {
-    padding: 0.65rem !important;
-    border-radius: 12px;
+    padding: 0.55rem 0.75rem !important;
+    border-radius: 10px;
   }
 
   .pulse-circle {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .connector-badge {
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    margin-left: 6px;
-  }
-
-  .btn-lg {
-    padding: 0.75rem 1.25rem !important;
-    font-size: 0.95rem !important;
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    margin-left: 5px;
   }
 
   .badge-pill {
-    font-size: 0.76rem;
-    padding: 5px 10px;
+    font-size: 0.74rem;
+    padding: 4px 8px;
     white-space: normal;
     text-align: center;
   }

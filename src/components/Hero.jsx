@@ -9,8 +9,8 @@ function Hero({ onGetStartedClick }) {
       <div className="container">
         <div className="row align-items-center g-4 g-lg-5">
           {/* Left Column: Copy & Actions */}
-          <div className="col-12 col-lg-6 text-start">
-            <div className="badge-pill mb-3">
+          <div className="col-12 col-lg-6 text-center text-lg-start">
+            <div className="badge-pill mb-3 mx-auto ms-lg-0">
               <span className="pulse-dot"></span>
               <span>Next-Gen Image &amp; Document Engine</span>
             </div>
@@ -19,66 +19,66 @@ function Hero({ onGetStartedClick }) {
               Transform &amp; Compress Files at <span className="text-primary-gradient">Light Speed</span>
             </h1>
 
-            <p className="hero-subtitle text-muted mb-4 lead" style={{ fontSize: '1.18rem', lineHeight: '1.6' }}>
+            <p className="hero-subtitle text-muted mb-4 mx-auto ms-lg-0" style={{ maxWidth: '520px' }}>
               Real-time transcoding across <strong>8 formats</strong> with zero quality degradation. Built with high-performance Laravel image processing and instant downloads.
             </p>
 
             {/* Quick Format Ticker Pills */}
-            <div className="d-flex flex-wrap align-items-center gap-1.5 mb-4">
+            <div className="d-flex flex-wrap justify-content-center justify-content-lg-start align-items-center gap-1.5 mb-4">
               <span className="text-muted smaller fw-semibold me-2">Supported:</span>
               {SUPPORTED_PILLS.map((ext) => (
                 <span
                   key={ext}
-                  className="badge bg-white text-dark border px-2 py-1 rounded-2 shadow-xs fw-bold"
-                  style={{ fontSize: '0.75rem' }}
+                  className="badge bg-white text-dark border px-2 py-0.5 rounded-2 shadow-xs fw-bold"
+                  style={{ fontSize: '0.72rem' }}
                 >
                   .{ext.toLowerCase()}
                 </span>
               ))}
             </div>
 
-            <div className="d-flex flex-column flex-sm-row gap-3 mb-4">
+            <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-2.5 mb-4">
               {onGetStartedClick ? (
                 <button
                   type="button"
                   onClick={onGetStartedClick}
-                  className="btn btn-primary-custom btn-lg px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm"
+                  className="btn btn-primary-custom px-4 py-2.5 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm"
                 >
-                  <FiZap size={18} />
+                  <FiZap size={16} />
                   <span>Start Converting Free</span>
                 </button>
               ) : (
                 <Link
                   to="/convert"
-                  className="btn btn-primary-custom btn-lg px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm"
+                  className="btn btn-primary-custom px-4 py-2.5 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm"
                 >
-                  <FiZap size={18} />
+                  <FiZap size={16} />
                   <span>Start Converting Free</span>
                 </Link>
               )}
 
               <Link
                 to="/compress"
-                className="btn btn-outline-custom btn-lg px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2"
+                className="btn btn-outline-custom px-4 py-2.5 d-inline-flex align-items-center justify-content-center gap-2"
               >
-                <FiMinimize2 size={18} className="text-primary" />
+                <FiMinimize2 size={16} className="text-primary" />
                 <span>Compress File</span>
               </Link>
             </div>
 
             {/* Micro Trust Indicators */}
-            <div className="d-flex flex-wrap gap-3 gap-sm-4 text-muted small pt-2 border-top border-light">
-              <div className="d-flex align-items-center gap-2">
-                <FiCheckCircle className="text-success" size={16} />
+            <div className="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 gap-sm-4 text-muted smaller pt-2 border-top border-light">
+              <div className="d-flex align-items-center gap-1.5">
+                <FiCheckCircle className="text-success" size={15} />
                 <span>Up to 100 MB / file</span>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <FiShield className="text-primary" size={16} />
+              <div className="d-flex align-items-center gap-1.5">
+                <FiShield className="text-primary" size={15} />
                 <span>No sign-up needed</span>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <FiCheckCircle className="text-success" size={16} />
-                <span>Ephemeral &amp; auto-deleted</span>
+              <div className="d-flex align-items-center gap-1.5">
+                <FiCheckCircle className="text-success" size={15} />
+                <span>Auto-deleted in 2 hrs</span>
               </div>
             </div>
           </div>

@@ -127,7 +127,7 @@ function ConversionSettings({ selectedFile, onConvertTrigger }) {
 
       <button
         type="button"
-        className="btn btn-primary-custom btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2 shadow-sm fs-6 fw-bold"
+        className="btn btn-primary-custom w-100 py-2.5 d-flex align-items-center justify-content-center gap-2 shadow-sm fs-6 fw-bold"
         onClick={handleConvertClick}
       >
         <FiRefreshCw size={18} />

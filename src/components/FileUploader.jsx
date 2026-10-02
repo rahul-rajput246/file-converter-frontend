@@ -122,22 +122,22 @@ function FileUploader({ selectedFile, onFileSelect, onFileRemove }) {
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && handleChooseFileClick()}
         >
-          <div className="dropzone-icon-box mb-3 mx-auto">
-            <FiUploadCloud size={38} className="dropzone-icon text-primary" />
+          <div className="dropzone-icon-box mb-2.5 mx-auto">
+            <FiUploadCloud size={26} className="dropzone-icon text-primary" />
           </div>
 
-          <h5 className="fw-bold mb-1 fs-5">Drag &amp; drop your file here</h5>
-          <p className="text-muted small mb-3">or browse from your computer or phone</p>
+          <h5 className="fw-bold mb-1 fs-6 fs-sm-5">Drag &amp; drop your file here</h5>
+          <p className="text-muted small mb-3" style={{ fontSize: '0.875rem' }}>or browse from your computer or phone</p>
 
           <button
             type="button"
-            className="btn btn-primary-custom px-4 py-2.5 mb-3 shadow-sm d-inline-flex align-items-center gap-2"
+            className="btn btn-primary-custom px-3.5 py-2 mb-3 shadow-sm d-inline-flex align-items-center gap-2"
             onClick={(e) => {
               e.stopPropagation();
               handleChooseFileClick();
             }}
           >
-            <FiUploadCloud size={18} />
+            <FiUploadCloud size={16} />
             <span>Choose File to Upload</span>
           </button>
 
