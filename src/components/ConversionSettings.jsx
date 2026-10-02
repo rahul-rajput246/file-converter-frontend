@@ -3,7 +3,7 @@ import { FiRefreshCw, FiArrowRight, FiSliders, FiCheck } from 'react-icons/fi';
 import { getTargetConversionOptions } from '../services/fileService';
 
 const FORMAT_METADATA = {
-  GIF: { label: 'Animated GIF', desc: 'Real Looping Animated GIF', tag: 'Animated' },
+  GIF: { label: 'GIF', desc: 'Standard Image / Looping Video GIF', tag: 'Popular' },
   MP4: { label: 'MP4 Video', desc: 'H.264 Universal Video Stream', tag: 'Video' },
   WEBM: { label: 'WebM Video', desc: 'Modern Web-Optimized Video', tag: 'Video' },
   MP3: { label: 'MP3 Audio', desc: 'Universal Sound / Audio Track', tag: 'Audio' },
