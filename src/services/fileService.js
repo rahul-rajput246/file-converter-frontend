@@ -122,18 +122,30 @@ export const convertFile = async (fileInstance, targetFormat) => {
   formData.append('file', fileInstance);
   formData.append('format', targetFormat.toLowerCase());
 
-  const response = await fetch(`${API_BASE_URL}/convert`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-    },
-    body: formData,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/convert`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error('Network error or server unreachable. If the server was sleeping, please wait a few seconds and try again.');
+  }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status} error.`);
+    }
+  }
 
   if (!response.ok) {
-    const errorMsg = data.errors?.file?.[0] || data.errors?.format?.[0] || data.message || 'File conversion failed.';
+    const errorMsg = data?.errors?.file?.[0] || data?.errors?.format?.[0] || data?.message || 'File conversion failed.';
     throw new Error(errorMsg);
   }
 
@@ -158,18 +170,30 @@ export const compressFile = async (fileInstance, options = 'medium') => {
     formData.append('compression_level', options.toLowerCase());
   }
 
-  const response = await fetch(`${API_BASE_URL}/compress`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-    },
-    body: formData,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/compress`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error('Network error or server unreachable. If the server was sleeping, please wait a few seconds and try again.');
+  }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status} error.`);
+    }
+  }
 
   if (!response.ok) {
-    const errorMsg = data.errors?.file?.[0] || data.errors?.target_size_kb?.[0] || data.errors?.compression_level?.[0] || data.message || 'File compression failed.';
+    const errorMsg = data?.errors?.file?.[0] || data?.errors?.target_size_kb?.[0] || data?.errors?.compression_level?.[0] || data?.message || 'File compression failed.';
     throw new Error(errorMsg);
   }
 
@@ -182,9 +206,14 @@ export const compressFile = async (fileInstance, options = 'medium') => {
 export const downloadFile = (downloadUrlOrFilename) => {
   if (!downloadUrlOrFilename) return;
 
-  const url = downloadUrlOrFilename.startsWith('http')
+  let url = downloadUrlOrFilename.startsWith('http')
     ? downloadUrlOrFilename
     : `${API_BASE_URL}/download/${downloadUrlOrFilename}`;
+
+  // If page is HTTPS and download URL is HTTP, force HTTPS to prevent browser mixed content block
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.startsWith('http://')) {
+    url = url.replace('http://', 'https://');
+  }
 
   const link = document.createElement('a');
   link.href = url;
