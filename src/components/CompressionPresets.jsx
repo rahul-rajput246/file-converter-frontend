@@ -26,7 +26,7 @@ const PRESETS = [
     level: 'low',
     desc: 'Maximum perceptual clarity with subtle lossless byte quantization.',
     badge: 'Lossless (25%)',
-    badgeClass: 'bg-purple-subtle text-purple border'
+    badgeClass: 'badge-purple'
   }
 ];
 

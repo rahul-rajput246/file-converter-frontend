@@ -667,6 +667,13 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(0);
 }
 
+.badge-purple {
+  background-color: rgba(139, 92, 246, 0.12) !important;
+  color: #7c3aed !important;
+  border-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+
 /* ==========================================================================
    Mobile Responsive Refinements & Anti-Overflow Protection
    ========================================================================== */

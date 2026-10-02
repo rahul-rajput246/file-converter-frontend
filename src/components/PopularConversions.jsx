@@ -17,7 +17,7 @@ const PRESETS = [
     title: 'Video → GIF',
     desc: 'Animated looping clip from MP4/WEBM/MOV',
     tag: 'Animated Clip',
-    badgeClass: 'bg-purple-subtle text-purple border'
+    badgeClass: 'badge-purple'
   },
   {
     id: 'jpg-png',
