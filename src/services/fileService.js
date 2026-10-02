@@ -75,7 +75,7 @@ export const getTargetConversionOptions = (inputExtension) => {
     // Images: Animated GIF is a prime option, plus standard image formats & video clip
     options = ['GIF', 'JPG', 'PNG', 'WEBP', 'AVIF', 'BMP', 'ICO', 'PDF', 'MP4'];
   } else if (ext === 'pdf') {
-    options = ['JPG', 'PNG', 'WEBP'];
+    options = ['PNG', 'JPG', 'WEBP', 'AVIF', 'GIF', 'BMP', 'ICO', 'TXT'];
   } else {
     options = ['GIF', 'JPG', 'PNG', 'WEBP', 'MP4', 'MP3', 'PDF'];
   }
@@ -108,7 +108,7 @@ export const validateFile = (file) => {
     'jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'ico',
     'mp4', 'webm', 'mov', 'avi', 'mkv', '3gp', 'm4v',
     'mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a',
-    'pdf'
+    'pdf', 'txt'
   ];
   
   if (ext && !supported.includes(ext)) {

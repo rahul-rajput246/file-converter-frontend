@@ -27,14 +27,15 @@ const FORMAT_CATEGORIES = [
     ]
   },
   {
-    category: 'Audio & Music',
+    category: 'Audio & Documents',
     icon: <FiMusic className="text-success" size={20} />,
     formats: [
       { name: 'MP3', desc: 'Universal Audio Soundtrack' },
       { name: 'WAV', desc: 'Lossless Studio Audio' },
       { name: 'OGG', desc: 'Vorbis Open Audio Stream' },
       { name: 'AAC', desc: 'High Quality Compressed' },
-      { name: 'PDF', desc: 'Vector & Raster Document' }
+      { name: 'PDF', desc: 'Vector & Raster Document' },
+      { name: 'TXT', desc: 'Extracted Plain Text File' }
     ]
   }
 ];

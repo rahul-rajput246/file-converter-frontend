@@ -17,6 +17,7 @@ const FORMAT_METADATA = {
   BMP: { label: 'BMP', desc: 'Uncompressed Bitmap', tag: 'Legacy' },
   ICO: { label: 'ICO', desc: 'Windows & Web Favicon (256px)', tag: 'Icon' },
   PDF: { label: 'PDF', desc: 'Printable Document Stream', tag: 'Document' },
+  TXT: { label: 'TXT', desc: 'Extracted Plain Text Document', tag: 'Text' },
 };
 
 function ConversionSettings({ selectedFile, onConvertTrigger }) {
