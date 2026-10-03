@@ -49,9 +49,13 @@ function ProcessingStatus({
     }
   };
 
+  const totalFiles = batchResult?.total || batchResult?.files?.length || 0;
   const hasZip = Boolean(batchResult?.zip_download_url || batchResult?.zip_filename);
   const successFiles = batchResult?.files?.filter(f => f.success && (f.download_url || f.filename)) || [];
-  const hasMultipleSuccess = successFiles.length > 1;
+  const successCount = successFiles.length;
+  const allFailed = totalFiles > 0 && successCount === 0;
+  const partialSuccess = successCount > 0 && successCount < totalFiles;
+  const hasMultipleSuccess = successCount > 1;
 
   const handleDownloadAll = () => {
     if (hasZip) {
@@ -118,19 +122,51 @@ function ProcessingStatus({
       {/* Completed State */}
       {status === 'completed' && (
         <div className="text-center py-3 py-sm-4">
-          <div className="success-icon-box mx-auto mb-2.5">
-            <FiCheckCircle size={30} />
-          </div>
+          {allFailed ? (
+            <div className="mx-auto mb-2.5 p-2 bg-danger-subtle text-danger rounded-circle d-inline-flex">
+              <FiAlertTriangle size={32} />
+            </div>
+          ) : partialSuccess ? (
+            <div className="mx-auto mb-2.5 p-2 bg-warning-subtle text-warning rounded-circle d-inline-flex">
+              <FiAlertTriangle size={32} />
+            </div>
+          ) : (
+            <div className="success-icon-box mx-auto mb-2.5">
+              <FiCheckCircle size={30} />
+            </div>
+          )}
 
           {isBatch ? (
             /* Multi-file batch completed view */
             <div>
-              <h4 className="fw-bold text-success mb-1 fs-5">
-                Batch Completed! ({batchResult.converted_count || batchResult.processed_count || batchResult.files.length} of {batchResult.total} Files Ready)
-              </h4>
-              <p className="text-muted small mb-3">
-                All selected files processed at ultra-fast speed. Download individually or batch download all with one click.
-              </p>
+              {allFailed ? (
+                <>
+                  <h4 className="fw-bold text-danger mb-1 fs-5">
+                    Processing Failed (0 of {totalFiles} Files Processed)
+                  </h4>
+                  <p className="text-muted small mb-3">
+                    The server could not process the selected files. Review the errors below.
+                  </p>
+                </>
+              ) : partialSuccess ? (
+                <>
+                  <h4 className="fw-bold text-warning mb-1 fs-5">
+                    Batch Finished with Warnings ({successCount} of {totalFiles} Files Ready)
+                  </h4>
+                  <p className="text-muted small mb-3">
+                    Some files succeeded, but others encountered issues. You can download the available files below.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h4 className="fw-bold text-success mb-1 fs-5">
+                    Batch Completed! ({successCount} of {totalFiles} Files Ready)
+                  </h4>
+                  <p className="text-muted small mb-3">
+                    All selected files processed at ultra-fast speed. Download individually or batch download all with one click.
+                  </p>
+                </>
+              )}
 
               {/* Prominent Download All Button */}
               {hasMultipleSuccess && (
@@ -179,11 +215,11 @@ function ProcessingStatus({
                             </span>
                             <div className="d-flex align-items-center gap-2 smaller text-muted">
                               {fileItem.original_size && (
-                                <span className="text-decoration-line-through">
+                                <span className={isSuccess ? "text-decoration-line-through" : ""}>
                                   {formatBytes(fileItem.original_size)}
                                 </span>
                               )}
-                              {fileItem.size > 0 && (
+                              {isSuccess && fileItem.size > 0 && (
                                 <span className="fw-bold text-dark">
                                   → {formatBytes(fileItem.size)}
                                 </span>
@@ -199,6 +235,11 @@ function ProcessingStatus({
                                 </span>
                               )}
                             </div>
+                            {!isSuccess && fileItem.error && (
+                              <div className="smaller text-danger mt-1 text-truncate" title={fileItem.error}>
+                                {fileItem.error}
+                              </div>
+                            )}
                           </div>
                         </div>
 
