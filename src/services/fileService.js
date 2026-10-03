@@ -317,6 +317,229 @@ export const compressBatchFiles = async (fileInstances, options = 'medium') => {
 };
 
 /**
+ * Call Laravel API: POST /api/files/create-zip
+ */
+export const createZipArchive = async (filenamesOrItems) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/create-zip`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ files: filenamesOrItems }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * High-speed parallel concurrent conversion of multiple files.
+ * Provides instant live progress per file as it finishes on multi-threaded server.
+ */
+export const convertFilesParallel = async (filesList, targetFormat, onProgress) => {
+  if (!filesList || filesList.length === 0) {
+    throw new Error('No files provided.');
+  }
+
+  const list = filesList.slice(0, MAX_BATCH_FILES);
+  const total = list.length;
+  let completed = 0;
+  const results = new Array(total);
+
+  // Worker queue for concurrency (up to 4 parallel HTTP requests for maximum throughput)
+  const queue = list.map((item, idx) => ({ item, idx }));
+  const CONCURRENCY = Math.min(4, total);
+
+  if (onProgress) {
+    onProgress({
+      completedCount: 0,
+      totalCount: total,
+      percent: Math.min(20, Math.round(100 / total / 2)),
+      latestResult: null,
+    });
+  }
+
+  const runWorker = async () => {
+    while (queue.length > 0) {
+      const task = queue.shift();
+      if (!task) break;
+      const { item, idx } = task;
+      const fileInstance = item.fileInstance || item;
+
+      try {
+        const res = await convertFile(fileInstance, targetFormat);
+
+        results[idx] = {
+          id: item.id || `file_${idx}`,
+          original_name: item.name || fileInstance.name,
+          original_size: item.size || fileInstance.size,
+          filename: res.filename,
+          format: targetFormat.toLowerCase(),
+          size: res.size || item.size || 0,
+          download_url: res.download_url,
+          success: true,
+        };
+      } catch (err) {
+        results[idx] = {
+          id: item.id || `file_${idx}`,
+          original_name: item.name || fileInstance?.name || `File ${idx + 1}`,
+          original_size: item.size || 0,
+          filename: null,
+          format: targetFormat.toLowerCase(),
+          size: 0,
+          download_url: null,
+          success: false,
+          error: err.message || 'Conversion error',
+        };
+      } finally {
+        completed++;
+        if (onProgress) {
+          onProgress({
+            completedCount: completed,
+            totalCount: total,
+            percent: Math.round((completed / total) * 100),
+            latestResult: results[idx],
+          });
+        }
+      }
+    }
+  };
+
+  const workers = Array.from({ length: CONCURRENCY }, () => runWorker());
+  await Promise.all(workers);
+
+  // Generate zip bundle if more than 1 file succeeded
+  const successfulFiles = results.filter((r) => r && r.success && r.filename);
+  let zipData = null;
+  if (successfulFiles.length > 1) {
+    const zipPayload = successfulFiles.map((f) => ({
+      filename: f.filename,
+      original_name: (f.original_name || 'file').replace(/\.[^.]+$/, '') + '.' + f.format,
+    }));
+    zipData = await createZipArchive(zipPayload);
+  }
+
+  return {
+    total,
+    converted_count: successfulFiles.length,
+    target_format: targetFormat,
+    files: results,
+    filename: results[0]?.filename || null,
+    download_url: results[0]?.download_url || null,
+    size: results[0]?.size || 0,
+    original_size: results[0]?.original_size || 0,
+    zip_filename: zipData?.zip_filename || null,
+    zip_download_url: zipData?.download_url || null,
+  };
+};
+
+/**
+ * High-speed parallel concurrent compression of multiple files.
+ */
+export const compressFilesParallel = async (filesList, options = 'medium', onProgress) => {
+  if (!filesList || filesList.length === 0) {
+    throw new Error('No files provided.');
+  }
+
+  const list = filesList.slice(0, MAX_BATCH_FILES);
+  const total = list.length;
+  let completed = 0;
+  const results = new Array(total);
+
+  const queue = list.map((item, idx) => ({ item, idx }));
+  const CONCURRENCY = Math.min(4, total);
+
+  if (onProgress) {
+    onProgress({
+      completedCount: 0,
+      totalCount: total,
+      percent: Math.min(20, Math.round(100 / total / 2)),
+      latestResult: null,
+    });
+  }
+
+  const runWorker = async () => {
+    while (queue.length > 0) {
+      const task = queue.shift();
+      if (!task) break;
+      const { item, idx } = task;
+      const fileInstance = item.fileInstance || item;
+
+      try {
+        const res = await compressFile(fileInstance, options);
+
+        results[idx] = {
+          id: item.id || `file_${idx}`,
+          original_name: item.name || fileInstance.name,
+          original_size: res.original_size || item.size,
+          processed_size: res.processed_size,
+          size: res.processed_size,
+          filename: res.filename,
+          format: res.format,
+          compression_level: res.compression_level,
+          download_url: res.download_url,
+          success: true,
+        };
+      } catch (err) {
+        results[idx] = {
+          id: item.id || `file_${idx}`,
+          original_name: item.name || fileInstance?.name || `File ${idx + 1}`,
+          original_size: item.size || 0,
+          processed_size: 0,
+          size: 0,
+          filename: null,
+          format: null,
+          download_url: null,
+          success: false,
+          error: err.message || 'Compression error',
+        };
+      } finally {
+        completed++;
+        if (onProgress) {
+          onProgress({
+            completedCount: completed,
+            totalCount: total,
+            percent: Math.round((completed / total) * 100),
+            latestResult: results[idx],
+          });
+        }
+      }
+    }
+  };
+
+  const workers = Array.from({ length: CONCURRENCY }, () => runWorker());
+  await Promise.all(workers);
+
+  const successfulFiles = results.filter((r) => r && r.success && r.filename);
+  let zipData = null;
+  if (successfulFiles.length > 1) {
+    const zipPayload = successfulFiles.map((f) => ({
+      filename: f.filename,
+      original_name: (f.original_name || 'file').replace(/\.[^.]+$/, '') + '_compressed.' + (f.format || 'jpg'),
+    }));
+    zipData = await createZipArchive(zipPayload);
+  }
+
+  return {
+    total,
+    processed_count: successfulFiles.length,
+    files: results,
+    filename: results[0]?.filename || null,
+    download_url: results[0]?.download_url || null,
+    processed_size: results[0]?.processed_size || 0,
+    original_size: results[0]?.original_size || 0,
+    format: results[0]?.format || null,
+    zip_filename: zipData?.zip_filename || null,
+    zip_download_url: zipData?.download_url || null,
+  };
+};
+
+/**
  * Trigger download from Laravel backend
  */
 export const downloadFile = (downloadUrlOrFilename) => {

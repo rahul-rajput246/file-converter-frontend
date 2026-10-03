@@ -7,11 +7,17 @@ import RecentFiles from '../components/RecentFiles';
 import CompressionWorkflow from '../components/CompressionWorkflow';
 import CompressionPresets from '../components/CompressionPresets';
 import { FiMinimize2 } from 'react-icons/fi';
-import { compressFile, downloadFile, formatBytes } from '../services/fileService';
+import { 
+  compressFile, 
+  compressFilesParallel, 
+  downloadFile, 
+  formatBytes,
+  MAX_BATCH_FILES 
+} from '../services/fileService';
 import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Compress() {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [processingState, setProcessingState] = useState('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [resultData, setResultData] = useState(null);
@@ -20,47 +26,101 @@ function Compress() {
   const [lastCompressSettings, setLastCompressSettings] = useState({ level: 'medium' });
   const uploaderRef = useRef(null);
 
+  const selectedFile = selectedFiles[0] || null;
+
+  const handleFilesSelect = (files) => {
+    const capped = Array.isArray(files) ? files.slice(0, MAX_BATCH_FILES) : [];
+    setSelectedFiles(capped);
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
+  const handleFileRemove = (index) => {
+    if (typeof index === 'number') {
+      setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
+    } else {
+      setSelectedFiles([]);
+    }
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
+  const handleClearAll = () => {
+    setSelectedFiles([]);
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
   const handleCompressTrigger = async (compressData) => {
-    if (!selectedFile?.fileInstance) {
-      setErrorMessage('Please select a valid image file first.');
+    if (selectedFiles.length === 0) {
+      setErrorMessage('Please select at least one image file first.');
       setProcessingState('error');
       return;
     }
 
     setLastCompressSettings(compressData);
     setErrorMessage(null);
-    setProcessingState('uploading');
-    setUploadProgress(45);
-
-    const progTimer = setTimeout(() => {
-      setUploadProgress(90);
-      setProcessingState('processing');
-    }, 300);
+    setProcessingState('processing');
+    setUploadProgress(20);
 
     try {
-      const data = await compressFile(selectedFile.fileInstance, compressData);
-      clearTimeout(progTimer);
+      let data;
+      const fileInstances = selectedFiles.map((f) => f.fileInstance);
+
+      if (fileInstances.length > 1) {
+        data = await compressFilesParallel(selectedFiles, compressData, (prog) => {
+          setUploadProgress(Math.max(20, prog.percent));
+        });
+      } else {
+        setUploadProgress(50);
+        data = await compressFile(fileInstances[0], compressData);
+      }
+
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
 
-      const conversionLabel = compressData.targetSizeKb
-        ? `Target: ${compressData.targetSizeKb} KB`
-        : `Compress (${compressData.level || 'medium'})`;
+      // Add to recent files history
+      if (data.files && Array.isArray(data.files)) {
+        let updated = recentList;
+        data.files.forEach((item) => {
+          if (item.success && item.filename) {
+            const entry = {
+              id: 'f-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+              file: item.original_name,
+              conversion: compressData.mode === 'target'
+                ? `Target: ${compressData.targetSizeKb} KB`
+                : `Compress (${(compressData.level || 'medium').toUpperCase()})`,
+              size: formatBytes(item.processed_size || item.size),
+              status: 'Completed',
+              downloadUrl: item.download_url,
+              date: 'Just now'
+            };
+            updated = saveRecentFile(entry);
+          }
+        });
+        setRecentList(updated);
+      } else if (data.filename) {
+        const conversionLabel = compressData.targetSizeKb
+          ? `Target: ${compressData.targetSizeKb} KB`
+          : `Compress (${compressData.level || 'medium'})`;
 
-      const newEntry = {
-        id: 'f-' + Date.now(),
-        file: data.filename,
-        conversion: conversionLabel,
-        size: formatBytes(data.processed_size),
-        status: 'Completed',
-        downloadUrl: data.download_url,
-        date: 'Just now'
-      };
-      const updated = saveRecentFile(newEntry);
-      setRecentList(updated);
+        const newEntry = {
+          id: 'f-' + Date.now(),
+          file: data.filename,
+          conversion: conversionLabel,
+          size: formatBytes(data.processed_size),
+          status: 'Completed',
+          downloadUrl: data.download_url,
+          date: 'Just now'
+        };
+        const updated = saveRecentFile(newEntry);
+        setRecentList(updated);
+      }
     } catch (err) {
-      clearTimeout(progTimer);
       setErrorMessage(err.message || 'Compression failed on server.');
       setProcessingState('error');
     }
@@ -87,24 +147,18 @@ function Compress() {
             <FileUploader
               ref={uploaderRef}
               selectedFile={selectedFile}
-              onFileSelect={(file) => {
-                setSelectedFile(file);
-                setProcessingState('idle');
-                setResultData(null);
-                setErrorMessage(null);
-              }}
-              onFileRemove={() => {
-                setSelectedFile(null);
-                setProcessingState('idle');
-                setResultData(null);
-                setErrorMessage(null);
-              }}
+              selectedFiles={selectedFiles}
+              onFileSelect={handleFilesSelect}
+              onFileRemove={handleFileRemove}
+              onClearAll={handleClearAll}
+              maxFiles={MAX_BATCH_FILES}
             />
 
-            {selectedFile ? (
+            {selectedFiles.length > 0 ? (
               <CompressionSettings
-                key={`${selectedFile.name}_${selectedFile.size}`}
+                key={`${selectedFiles.length}_${selectedFiles[0]?.name}`}
                 selectedFile={selectedFile}
+                selectedFiles={selectedFiles}
                 onCompressTrigger={handleCompressTrigger}
               />
             ) : (
@@ -122,8 +176,9 @@ function Compress() {
               errorMessage={errorMessage}
               outputFileName={resultData?.filename}
               downloadUrl={resultData?.download_url}
-              originalSize={resultData?.original_size}
+              originalSize={resultData?.original_size || selectedFile?.size}
               processedSize={resultData?.processed_size}
+              batchResult={resultData?.files ? resultData : null}
               onDownload={() => downloadFile(resultData?.download_url || resultData?.filename)}
               onReset={() => {
                 setProcessingState('idle');
@@ -137,6 +192,7 @@ function Compress() {
           <div className="col-12 col-lg-5">
             <FileInfo
               selectedFile={selectedFile}
+              selectedFiles={selectedFiles}
               isCompressMode={true}
               outputSize={resultData?.processed_size}
             />

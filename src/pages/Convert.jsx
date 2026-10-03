@@ -8,11 +8,17 @@ import RecentFiles from '../components/RecentFiles';
 import ConversionWorkflow from '../components/ConversionWorkflow';
 import PopularConversions from '../components/PopularConversions';
 import { FiRefreshCw } from 'react-icons/fi';
-import { convertFile, downloadFile, formatBytes } from '../services/fileService';
+import { 
+  convertFile, 
+  convertFilesParallel, 
+  downloadFile, 
+  formatBytes,
+  MAX_BATCH_FILES 
+} from '../services/fileService';
 import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Convert() {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [targetFormat, setTargetFormat] = useState('WEBP');
   const [processingState, setProcessingState] = useState('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -21,43 +27,96 @@ function Convert() {
   const [recentList, setRecentList] = useState(() => getStoredRecentFiles());
   const uploaderRef = useRef(null);
 
+  const selectedFile = selectedFiles[0] || null;
+
+  const handleFilesSelect = (files) => {
+    const capped = Array.isArray(files) ? files.slice(0, MAX_BATCH_FILES) : [];
+    setSelectedFiles(capped);
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
+  const handleFileRemove = (index) => {
+    if (typeof index === 'number') {
+      setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
+    } else {
+      setSelectedFiles([]);
+    }
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
+  const handleClearAll = () => {
+    setSelectedFiles([]);
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
   const handleConvertTrigger = async (conversionData) => {
-    if (!selectedFile?.fileInstance) {
-      setErrorMessage('Please select a valid image file first.');
+    if (selectedFiles.length === 0) {
+      setErrorMessage('Please select at least one image file first.');
       setProcessingState('error');
       return;
     }
 
-    setTargetFormat(conversionData.targetFormat);
+    const chosenFormat = conversionData.targetFormat || targetFormat;
+    setTargetFormat(chosenFormat);
     setErrorMessage(null);
-    setProcessingState('uploading');
-    setUploadProgress(40);
-
-    const progTimer = setTimeout(() => {
-      setUploadProgress(85);
-      setProcessingState('processing');
-    }, 300);
+    setProcessingState('processing');
+    setUploadProgress(20);
 
     try {
-      const data = await convertFile(selectedFile.fileInstance, conversionData.targetFormat);
-      clearTimeout(progTimer);
+      let data;
+      const fileInstances = selectedFiles.map((f) => f.fileInstance);
+
+      if (fileInstances.length > 1) {
+        data = await convertFilesParallel(selectedFiles, chosenFormat, (prog) => {
+          setUploadProgress(Math.max(20, prog.percent));
+        });
+      } else {
+        setUploadProgress(50);
+        data = await convertFile(fileInstances[0], chosenFormat);
+      }
+
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
 
-      const newEntry = {
-        id: 'f-' + Date.now(),
-        file: data.filename,
-        conversion: `${selectedFile.extension} → ${conversionData.targetFormat}`,
-        size: formatBytes(data.size || selectedFile.size),
-        status: 'Completed',
-        downloadUrl: data.download_url,
-        date: 'Just now'
-      };
-      const updated = saveRecentFile(newEntry);
-      setRecentList(updated);
+      // Add to recent files history
+      if (data.files && Array.isArray(data.files)) {
+        let updated = recentList;
+        data.files.forEach((item) => {
+          if (item.success && item.filename) {
+            const entry = {
+              id: 'f-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+              file: item.original_name,
+              conversion: `→ ${chosenFormat.toUpperCase()}`,
+              size: formatBytes(item.size),
+              status: 'Completed',
+              downloadUrl: item.download_url,
+              date: 'Just now'
+            };
+            updated = saveRecentFile(entry);
+          }
+        });
+        setRecentList(updated);
+      } else if (data.filename) {
+        const newEntry = {
+          id: 'f-' + Date.now(),
+          file: data.filename,
+          conversion: `${selectedFile?.extension || 'IMG'} → ${chosenFormat}`,
+          size: formatBytes(data.size || selectedFile?.size),
+          status: 'Completed',
+          downloadUrl: data.download_url,
+          date: 'Just now'
+        };
+        const updated = saveRecentFile(newEntry);
+        setRecentList(updated);
+      }
     } catch (err) {
-      clearTimeout(progTimer);
       setErrorMessage(err.message || 'Conversion failed on server.');
       setProcessingState('error');
     }
@@ -84,23 +143,17 @@ function Convert() {
             <FileUploader
               ref={uploaderRef}
               selectedFile={selectedFile}
-              onFileSelect={(file) => {
-                setSelectedFile(file);
-                setProcessingState('idle');
-                setResultData(null);
-                setErrorMessage(null);
-              }}
-              onFileRemove={() => {
-                setSelectedFile(null);
-                setProcessingState('idle');
-                setResultData(null);
-                setErrorMessage(null);
-              }}
+              selectedFiles={selectedFiles}
+              onFileSelect={handleFilesSelect}
+              onFileRemove={handleFileRemove}
+              onClearAll={handleClearAll}
+              maxFiles={MAX_BATCH_FILES}
             />
 
-            {selectedFile ? (
+            {selectedFiles.length > 0 ? (
               <ConversionSettings
                 selectedFile={selectedFile}
+                selectedFiles={selectedFiles}
                 onConvertTrigger={handleConvertTrigger}
               />
             ) : (
@@ -118,8 +171,9 @@ function Convert() {
               errorMessage={errorMessage}
               outputFileName={resultData?.filename}
               downloadUrl={resultData?.download_url}
-              originalSize={selectedFile?.size}
+              originalSize={resultData?.original_size || selectedFile?.size}
               processedSize={resultData?.size}
+              batchResult={resultData?.files ? resultData : null}
               onDownload={() => downloadFile(resultData?.download_url || resultData?.filename)}
               onReset={() => {
                 setProcessingState('idle');
@@ -133,6 +187,7 @@ function Convert() {
           <div className="col-12 col-lg-5">
             <FileInfo
               selectedFile={selectedFile}
+              selectedFiles={selectedFiles}
               targetFormat={targetFormat}
               outputSize={resultData?.size}
             />

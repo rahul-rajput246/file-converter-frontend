@@ -16,8 +16,10 @@ import { FiRefreshCw, FiMinimize2 } from 'react-icons/fi';
 import { 
   convertFile, 
   convertBatchFiles, 
+  convertFilesParallel,
   compressFile, 
   compressBatchFiles, 
+  compressFilesParallel,
   downloadFile, 
   formatBytes,
   MAX_BATCH_FILES 
@@ -81,27 +83,22 @@ function Home() {
     const chosenFormat = conversionData.targetFormat || targetFormat;
     setTargetFormat(chosenFormat);
     setErrorMessage(null);
-    setProcessingState('uploading');
-    setUploadProgress(35);
-
-    const progTimer = setTimeout(() => {
-      setUploadProgress(75);
-      setProcessingState('processing');
-    }, 250);
+    setProcessingState('processing');
+    setUploadProgress(20);
 
     try {
       let data;
       const fileInstances = selectedFiles.map((f) => f.fileInstance);
 
       if (fileInstances.length > 1) {
-        // Multi-image batch conversion
-        data = await convertBatchFiles(fileInstances, chosenFormat);
+        data = await convertFilesParallel(selectedFiles, chosenFormat, (prog) => {
+          setUploadProgress(Math.max(20, prog.percent));
+        });
       } else {
-        // Single image conversion
+        setUploadProgress(50);
         data = await convertFile(fileInstances[0], chosenFormat);
       }
 
-      clearTimeout(progTimer);
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
@@ -138,7 +135,6 @@ function Home() {
         setRecentList(updated);
       }
     } catch (err) {
-      clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to convert file on server.');
       setProcessingState('error');
     }
@@ -152,25 +148,22 @@ function Home() {
     }
 
     setErrorMessage(null);
-    setProcessingState('uploading');
-    setUploadProgress(40);
-
-    const progTimer = setTimeout(() => {
-      setUploadProgress(80);
-      setProcessingState('processing');
-    }, 250);
+    setProcessingState('processing');
+    setUploadProgress(20);
 
     try {
       let data;
       const fileInstances = selectedFiles.map((f) => f.fileInstance);
 
       if (fileInstances.length > 1) {
-        data = await compressBatchFiles(fileInstances, compressData);
+        data = await compressFilesParallel(selectedFiles, compressData, (prog) => {
+          setUploadProgress(Math.max(20, prog.percent));
+        });
       } else {
+        setUploadProgress(50);
         data = await compressFile(fileInstances[0], compressData);
       }
 
-      clearTimeout(progTimer);
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
@@ -211,7 +204,6 @@ function Home() {
         setRecentList(updated);
       }
     } catch (err) {
-      clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to compress file on server.');
       setProcessingState('error');
     }
