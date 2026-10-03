@@ -146,6 +146,9 @@ export const convertFile = async (fileInstance, targetFormat) => {
   formData.append('file', fileInstance);
   formData.append('format', targetFormat.toLowerCase());
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+
   let response;
   try {
     response = await fetch(`${API_BASE_URL}/convert`, {
@@ -154,9 +157,15 @@ export const convertFile = async (fileInstance, targetFormat) => {
         'Accept': 'application/json',
       },
       body: formData,
+      signal: controller.signal,
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. The file took longer than 60 seconds to process.');
+    }
     throw new Error('Network error or server unreachable. If the server was sleeping, please wait a few seconds and try again.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   let data;
@@ -194,6 +203,9 @@ export const compressFile = async (fileInstance, options = 'medium') => {
     formData.append('compression_level', options.toLowerCase());
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+
   let response;
   try {
     response = await fetch(`${API_BASE_URL}/compress`, {
@@ -202,9 +214,15 @@ export const compressFile = async (fileInstance, options = 'medium') => {
         'Accept': 'application/json',
       },
       body: formData,
+      signal: controller.signal,
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. The compression took longer than 60 seconds.');
+    }
     throw new Error('Network error or server unreachable. If the server was sleeping, please wait a few seconds and try again.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   let data;
@@ -331,7 +349,7 @@ export const createZipArchive = async (filenamesOrItems) => {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data;
+    return (data && data.success && data.zip_filename) ? data : null;
   } catch {
     return null;
   }
@@ -351,9 +369,13 @@ export const convertFilesParallel = async (filesList, targetFormat, onProgress) 
   let completed = 0;
   const results = new Array(total);
 
-  // Worker queue for concurrency (up to 4 parallel HTTP requests for maximum throughput)
+  // Check for heavy media (PDF, Video) to throttle concurrency and avoid exhausting server RAM
+  const hasHeavyMedia = list.some(item => {
+    const ext = getFileExtension(item.name || item.fileInstance?.name || '').toLowerCase();
+    return ['pdf', 'mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext);
+  });
   const queue = list.map((item, idx) => ({ item, idx }));
-  const CONCURRENCY = Math.min(4, total);
+  const CONCURRENCY = Math.min(hasHeavyMedia ? 2 : 3, total);
 
   if (onProgress) {
     onProgress({

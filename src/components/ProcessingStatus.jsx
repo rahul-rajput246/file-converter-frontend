@@ -49,6 +49,22 @@ function ProcessingStatus({
     }
   };
 
+  const hasZip = Boolean(batchResult?.zip_download_url || batchResult?.zip_filename);
+  const successFiles = batchResult?.files?.filter(f => f.success && (f.download_url || f.filename)) || [];
+  const hasMultipleSuccess = successFiles.length > 1;
+
+  const handleDownloadAll = () => {
+    if (hasZip) {
+      handleZipDownload();
+    } else if (successFiles.length > 0) {
+      successFiles.forEach((f, index) => {
+        setTimeout(() => {
+          downloadFile(f.download_url || f.filename);
+        }, index * 250);
+      });
+    }
+  };
+
   return (
     <div className="card custom-card p-4 shadow-sm mb-4">
       {/* Uploading State */}
@@ -80,10 +96,22 @@ function ProcessingStatus({
           <div className="mx-auto mb-3 p-3 bg-primary-subtle text-primary rounded-circle d-inline-flex">
             <FiLoader className="spin-icon" size={40} />
           </div>
-          <h5 className="fw-bold mb-2 fs-5">Processing images on server...</h5>
-          <p className="text-muted small mb-0 mx-auto" style={{ maxWidth: '480px' }}>
-            High-speed native GD engine is converting and optimizing your images in memory.
+          <h5 className="fw-bold mb-2 fs-5">Processing files on server...</h5>
+          <p className="text-muted small mb-3 mx-auto" style={{ maxWidth: '480px' }}>
+            High-speed document &amp; media engine is converting and optimizing your files.
           </p>
+
+          <div className="progress progress-shimmer mb-2 rounded-pill mx-auto" style={{ height: '12px', maxWidth: '420px' }}>
+            <div
+              className="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+              role="progressbar"
+              style={{ width: `${progress}%` }}
+              aria-valuenow={progress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+          <span className="small text-muted fw-bold">{progress}% completed</span>
         </div>
       )}
 
@@ -101,22 +129,26 @@ function ProcessingStatus({
                 Batch Completed! ({batchResult.converted_count || batchResult.processed_count || batchResult.files.length} of {batchResult.total} Files Ready)
               </h4>
               <p className="text-muted small mb-3">
-                All selected images processed at ultra-fast speed. Download individually or as a single ZIP bundle.
+                All selected files processed at ultra-fast speed. Download individually or batch download all with one click.
               </p>
 
-              {/* Prominent ZIP Download Button if available */}
-              {(batchResult.zip_download_url || batchResult.zip_filename) && (
+              {/* Prominent Download All Button */}
+              {hasMultipleSuccess && (
                 <div className="mb-4">
                   <button
                     type="button"
                     className="btn btn-success px-4 py-2.5 d-inline-flex align-items-center justify-content-center gap-2 shadow-sm fw-bold fs-6"
                     style={{ background: 'var(--success-gradient)', border: 'none' }}
-                    onClick={handleZipDownload}
+                    onClick={handleDownloadAll}
                   >
                     <FiArchive size={20} />
-                    <span>Download All Files as ZIP</span>
+                    <span>{hasZip ? 'Download All Files as ZIP' : 'Download All Files'}</span>
                   </button>
-                  <div className="text-muted smaller mt-1">One-click download of all converted images in a .zip archive</div>
+                  <div className="text-muted smaller mt-1">
+                    {hasZip 
+                      ? 'One-click download of all converted files in a .zip archive' 
+                      : 'Download all processed files to your device'}
+                  </div>
                 </div>
               )}
 
