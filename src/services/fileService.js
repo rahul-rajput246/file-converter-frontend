@@ -16,6 +16,7 @@ export const SUPPORTED_FORMATS = {
 
 export const MAX_FILE_SIZE_MB = 100;
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+export const MAX_BATCH_FILES = 10;
 
 /**
  * Format bytes into human readable string (e.g. 2.4 MB)
@@ -217,6 +218,98 @@ export const compressFile = async (fileInstance, options = 'medium') => {
 
   if (!response.ok) {
     const errorMsg = data?.errors?.file?.[0] || data?.errors?.target_size_kb?.[0] || data?.errors?.compression_level?.[0] || data?.message || 'File compression failed.';
+    throw new Error(errorMsg);
+  }
+
+  return data;
+};
+
+/**
+ * Call Laravel API: POST /api/files/batch-convert
+ * Convert up to 10 files in one request
+ */
+export const convertBatchFiles = async (fileInstances, targetFormat) => {
+  const formData = new FormData();
+  fileInstances.slice(0, MAX_BATCH_FILES).forEach((file) => {
+    formData.append('files[]', file);
+  });
+  formData.append('format', targetFormat.toLowerCase());
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/batch-convert`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error('Network error or server unreachable. Please verify the backend is running.');
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status} error.`);
+    }
+  }
+
+  if (!response.ok) {
+    const errorMsg = data?.message || data?.errors?.files?.[0] || data?.errors?.format?.[0] || 'Batch conversion failed.';
+    throw new Error(errorMsg);
+  }
+
+  return data;
+};
+
+/**
+ * Call Laravel API: POST /api/files/batch-compress
+ * Compress up to 10 files in one request
+ */
+export const compressBatchFiles = async (fileInstances, options = 'medium') => {
+  const formData = new FormData();
+  fileInstances.slice(0, MAX_BATCH_FILES).forEach((file) => {
+    formData.append('files[]', file);
+  });
+
+  if (typeof options === 'object' && options !== null) {
+    if (options.targetSizeKb) {
+      formData.append('target_size_kb', options.targetSizeKb);
+    }
+    if (options.level) {
+      formData.append('compression_level', options.level.toLowerCase());
+    }
+  } else if (typeof options === 'string') {
+    formData.append('compression_level', options.toLowerCase());
+  }
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/batch-compress`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error('Network error or server unreachable. Please verify the backend is running.');
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status} error.`);
+    }
+  }
+
+  if (!response.ok) {
+    const errorMsg = data?.message || data?.errors?.files?.[0] || data?.errors?.compression_level?.[0] || 'Batch compression failed.';
     throw new Error(errorMsg);
   }
 

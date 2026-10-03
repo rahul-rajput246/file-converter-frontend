@@ -13,11 +13,19 @@ import CompressionWorkflow from '../components/CompressionWorkflow';
 import PopularConversions from '../components/PopularConversions';
 import CompressionPresets from '../components/CompressionPresets';
 import { FiRefreshCw, FiMinimize2 } from 'react-icons/fi';
-import { convertFile, compressFile, downloadFile, formatBytes } from '../services/fileService';
+import { 
+  convertFile, 
+  convertBatchFiles, 
+  compressFile, 
+  compressBatchFiles, 
+  downloadFile, 
+  formatBytes,
+  MAX_BATCH_FILES 
+} from '../services/fileService';
 import { getStoredRecentFiles, saveRecentFile } from '../utils/historyStorage';
 
 function Home() {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [activeTab, setActiveTab] = useState('convert'); // 'convert' | 'compress'
   const [targetFormat, setTargetFormat] = useState('WEBP');
   const [processingState, setProcessingState] = useState('idle'); // 'idle' | 'uploading' | 'processing' | 'completed' | 'error'
@@ -29,62 +37,106 @@ function Home() {
   const workspaceRef = useRef(null);
   const uploaderRef = useRef(null);
 
+  const selectedFile = selectedFiles[0] || null;
+
   const scrollToWorkspace = () => {
     if (workspaceRef.current) {
       workspaceRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleFileSelect = (fileData) => {
-    setSelectedFile(fileData);
+  const handleFilesSelect = (files) => {
+    const capped = Array.isArray(files) ? files.slice(0, MAX_BATCH_FILES) : [];
+    setSelectedFiles(capped);
     setProcessingState('idle');
     setResultData(null);
     setErrorMessage(null);
   };
 
-  const handleFileRemove = () => {
-    setSelectedFile(null);
+  const handleFileRemove = (index) => {
+    if (typeof index === 'number') {
+      setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
+    } else {
+      setSelectedFiles([]);
+    }
+    setProcessingState('idle');
+    setResultData(null);
+    setErrorMessage(null);
+  };
+
+  const handleClearAll = () => {
+    setSelectedFiles([]);
     setProcessingState('idle');
     setResultData(null);
     setErrorMessage(null);
   };
 
   const handleConvertTrigger = async (conversionData) => {
-    if (!selectedFile?.fileInstance) {
-      setErrorMessage('Please select a valid image file first.');
+    if (selectedFiles.length === 0) {
+      setErrorMessage('Please select at least one image file first.');
       setProcessingState('error');
       return;
     }
 
-    setTargetFormat(conversionData.targetFormat);
+    const chosenFormat = conversionData.targetFormat || targetFormat;
+    setTargetFormat(chosenFormat);
     setErrorMessage(null);
     setProcessingState('uploading');
-    setUploadProgress(40);
+    setUploadProgress(35);
 
     const progTimer = setTimeout(() => {
-      setUploadProgress(85);
+      setUploadProgress(75);
       setProcessingState('processing');
-    }, 300);
+    }, 250);
 
     try {
-      const data = await convertFile(selectedFile.fileInstance, conversionData.targetFormat);
+      let data;
+      const fileInstances = selectedFiles.map((f) => f.fileInstance);
+
+      if (fileInstances.length > 1) {
+        // Multi-image batch conversion
+        data = await convertBatchFiles(fileInstances, chosenFormat);
+      } else {
+        // Single image conversion
+        data = await convertFile(fileInstances[0], chosenFormat);
+      }
+
       clearTimeout(progTimer);
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
 
       // Add to recent files history
-      const newEntry = {
-        id: 'f-' + Date.now(),
-        file: data.filename,
-        conversion: `${selectedFile.extension} → ${conversionData.targetFormat}`,
-        size: formatBytes(data.size || selectedFile.size),
-        status: 'Completed',
-        downloadUrl: data.download_url,
-        date: 'Just now'
-      };
-      const updated = saveRecentFile(newEntry);
-      setRecentList(updated);
+      if (data.files && Array.isArray(data.files)) {
+        let updated = recentList;
+        data.files.forEach((item) => {
+          if (item.success && item.filename) {
+            const entry = {
+              id: 'f-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+              file: item.original_name,
+              conversion: `→ ${chosenFormat.toUpperCase()}`,
+              size: formatBytes(item.size),
+              status: 'Completed',
+              downloadUrl: item.download_url,
+              date: 'Just now'
+            };
+            updated = saveRecentFile(entry);
+          }
+        });
+        setRecentList(updated);
+      } else if (data.filename) {
+        const newEntry = {
+          id: 'f-' + Date.now(),
+          file: data.filename,
+          conversion: `${selectedFile?.extension || 'IMG'} → ${chosenFormat}`,
+          size: formatBytes(data.size || selectedFile?.size),
+          status: 'Completed',
+          downloadUrl: data.download_url,
+          date: 'Just now'
+        };
+        const updated = saveRecentFile(newEntry);
+        setRecentList(updated);
+      }
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to convert file on server.');
@@ -93,42 +145,71 @@ function Home() {
   };
 
   const handleCompressTrigger = async (compressData) => {
-    if (!selectedFile?.fileInstance) {
-      setErrorMessage('Please select a valid image file first.');
+    if (selectedFiles.length === 0) {
+      setErrorMessage('Please select at least one image file first.');
       setProcessingState('error');
       return;
     }
 
     setErrorMessage(null);
     setProcessingState('uploading');
-    setUploadProgress(45);
+    setUploadProgress(40);
 
     const progTimer = setTimeout(() => {
-      setUploadProgress(90);
+      setUploadProgress(80);
       setProcessingState('processing');
-    }, 300);
+    }, 250);
 
     try {
-      const data = await compressFile(selectedFile.fileInstance, compressData);
+      let data;
+      const fileInstances = selectedFiles.map((f) => f.fileInstance);
+
+      if (fileInstances.length > 1) {
+        data = await compressBatchFiles(fileInstances, compressData);
+      } else {
+        data = await compressFile(fileInstances[0], compressData);
+      }
+
       clearTimeout(progTimer);
       setUploadProgress(100);
       setResultData(data);
       setProcessingState('completed');
 
       // Add to recent files history
-      const newEntry = {
-        id: 'f-' + Date.now(),
-        file: data.filename,
-        conversion: compressData.mode === 'target'
-          ? `Compress → ${compressData.targetSizeKb} KB`
-          : `Compress (${(compressData.level || 'medium').toUpperCase()})`,
-        size: formatBytes(data.processed_size),
-        status: 'Completed',
-        downloadUrl: data.download_url,
-        date: 'Just now'
-      };
-      const updated = saveRecentFile(newEntry);
-      setRecentList(updated);
+      if (data.files && Array.isArray(data.files)) {
+        let updated = recentList;
+        data.files.forEach((item) => {
+          if (item.success && item.filename) {
+            const entry = {
+              id: 'f-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+              file: item.original_name,
+              conversion: compressData.mode === 'target'
+                ? `Compress → ${compressData.targetSizeKb} KB`
+                : `Compress (${(compressData.level || 'medium').toUpperCase()})`,
+              size: formatBytes(item.processed_size),
+              status: 'Completed',
+              downloadUrl: item.download_url,
+              date: 'Just now'
+            };
+            updated = saveRecentFile(entry);
+          }
+        });
+        setRecentList(updated);
+      } else if (data.filename) {
+        const newEntry = {
+          id: 'f-' + Date.now(),
+          file: data.filename,
+          conversion: compressData.mode === 'target'
+            ? `Compress → ${compressData.targetSizeKb} KB`
+            : `Compress (${(compressData.level || 'medium').toUpperCase()})`,
+          size: formatBytes(data.processed_size),
+          status: 'Completed',
+          downloadUrl: data.download_url,
+          date: 'Just now'
+        };
+        const updated = saveRecentFile(newEntry);
+        setRecentList(updated);
+      }
     } catch (err) {
       clearTimeout(progTimer);
       setErrorMessage(err.message || 'Failed to compress file on server.');
@@ -145,10 +226,10 @@ function Home() {
       <div className="workspace-container py-4" ref={workspaceRef} id="workspace">
         <div className="container">
           <div className="text-center mb-4">
-            <span className="badge-pill mb-2">Instant Tooling</span>
-            <h2 className="section-title fw-bold">File Optimization Suite</h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '550px' }}>
-              Upload your JPG, PNG, or WEBP image to convert formats or reduce file size immediately with our Laravel API.
+            <span className="badge-pill mb-2">⚡ Ultra-Fast Batch Processing</span>
+            <h2 className="section-title fw-bold">Image Converter &amp; Compressor</h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '600px' }}>
+              Convert and compress <strong>up to 10 images</strong> simultaneously at lightning speed with native GD acceleration and 1-click ZIP bundle downloads.
             </p>
           </div>
 
@@ -166,7 +247,7 @@ function Home() {
                 }}
               >
                 <FiRefreshCw size={16} />
-                <span className="fw-semibold">Convert Format</span>
+                <span className="fw-semibold">Convert Format (Up to 10)</span>
               </button>
               <button
                 type="button"
@@ -179,7 +260,7 @@ function Home() {
                 }}
               >
                 <FiMinimize2 size={16} />
-                <span className="fw-semibold">Compress File</span>
+                <span className="fw-semibold">Compress Files (Up to 10)</span>
               </button>
             </div>
           </div>
@@ -190,27 +271,32 @@ function Home() {
               {/* Main File Upload Area */}
               <FileUploader
                 ref={uploaderRef}
+                selectedFiles={selectedFiles}
                 selectedFile={selectedFile}
-                onFileSelect={handleFileSelect}
+                onFilesSelect={handleFilesSelect}
+                onFileSelect={(f) => handleFilesSelect([f])}
                 onFileRemove={handleFileRemove}
+                onClearAll={handleClearAll}
               />
 
               {/* Conversion or Compression Settings */}
-              {selectedFile && activeTab === 'convert' && (
+              {selectedFiles.length > 0 && activeTab === 'convert' && (
                 <ConversionSettings
                   selectedFile={selectedFile}
+                  selectedFiles={selectedFiles}
                   onConvertTrigger={handleConvertTrigger}
                 />
               )}
 
-              {selectedFile && activeTab === 'compress' && (
+              {selectedFiles.length > 0 && activeTab === 'compress' && (
                 <CompressionSettings
                   selectedFile={selectedFile}
+                  selectedFiles={selectedFiles}
                   onCompressTrigger={handleCompressTrigger}
                 />
               )}
 
-              {!selectedFile && activeTab === 'convert' && (
+              {selectedFiles.length === 0 && activeTab === 'convert' && (
                 <PopularConversions
                   onSelectPreset={(target) => {
                     setTargetFormat(target);
@@ -219,7 +305,7 @@ function Home() {
                 />
               )}
 
-              {!selectedFile && activeTab === 'compress' && (
+              {selectedFiles.length === 0 && activeTab === 'compress' && (
                 <CompressionPresets
                   onSelectPreset={(_level) => {
                     uploaderRef.current?.openFilePicker();
@@ -234,6 +320,9 @@ function Home() {
                 errorMessage={errorMessage}
                 outputFileName={resultData?.filename}
                 downloadUrl={resultData?.download_url}
+                originalSize={resultData?.original_size || selectedFile?.size}
+                processedSize={resultData?.processed_size || resultData?.size}
+                batchResult={resultData?.files ? resultData : null}
                 onDownload={() => downloadFile(resultData?.download_url || resultData?.filename)}
                 onReset={() => {
                   setProcessingState('idle');
@@ -254,6 +343,7 @@ function Home() {
             <div className="col-12 col-lg-5">
               <FileInfo
                 selectedFile={selectedFile}
+                selectedFiles={selectedFiles}
                 targetFormat={targetFormat}
                 isCompressMode={activeTab === 'compress'}
                 outputSize={resultData?.processed_size || resultData?.size}

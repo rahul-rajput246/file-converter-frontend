@@ -1,8 +1,14 @@
-import { FiFile, FiCheckSquare, FiActivity, FiShield, FiCpu, FiTrendingDown, FiSliders } from 'react-icons/fi';
+import { FiFile, FiCheckSquare, FiActivity, FiShield, FiCpu, FiTrendingDown, FiSliders, FiLayers } from 'react-icons/fi';
 import { formatBytes } from '../services/fileService';
 
-function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false, outputSize = null }) {
-  if (!selectedFile) {
+function FileInfo({ selectedFile, selectedFiles = [], targetFormat = 'WEBP', isCompressMode = false, outputSize = null }) {
+  const filesList = Array.isArray(selectedFiles) && selectedFiles.length > 0 
+    ? selectedFiles 
+    : (selectedFile ? [selectedFile] : []);
+  const count = filesList.length;
+  const primaryFile = filesList[0] || selectedFile;
+
+  if (count === 0) {
     return (
       <div className="card custom-card p-4 shadow-sm mb-4 text-start">
         <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-light">
@@ -12,7 +18,7 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
           </h5>
           <span className="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
             <span className="pulse-dot"></span>
-            <span>Engine Ready</span>
+            <span>Fast Engine Ready</span>
           </span>
         </div>
 
@@ -21,13 +27,13 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
           <div className="col-6">
             <div className="spec-tile">
               <div className="spec-tile-label">Format Engine</div>
-              <div className="spec-tile-value text-truncate">Intervention v3 + FFmpeg</div>
+              <div className="spec-tile-value text-truncate">High-Speed Native GD</div>
             </div>
           </div>
           <div className="col-6">
             <div className="spec-tile">
-              <div className="spec-tile-label">Color Fidelity</div>
-              <div className="spec-tile-value text-truncate">24-bit sRGB + Alpha</div>
+              <div className="spec-tile-label">Batch Capacity</div>
+              <div className="spec-tile-value text-truncate">Up to 10 Images</div>
             </div>
           </div>
           <div className="col-6">
@@ -38,8 +44,8 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
           </div>
           <div className="col-6">
             <div className="spec-tile">
-              <div className="spec-tile-label">Max File Size</div>
-              <div className="spec-tile-value text-truncate">100 MB Free</div>
+              <div className="spec-tile-label">Batch Download</div>
+              <div className="spec-tile-value text-truncate">1-Click ZIP Archive</div>
             </div>
           </div>
         </div>
@@ -48,29 +54,31 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
         <div className="p-3 rounded-3 bg-light-subtle border border-dashed text-center">
           <FiSliders size={20} className="text-muted mb-1.5 opacity-75" />
           <p className="mb-0 text-muted smaller">
-            Select or drag a file to inspect native resolution, container headers, color profiles, and size benchmarks.
+            Select up to 10 images to inspect total payload, extensions, format targets, and compression benchmarks.
           </p>
         </div>
       </div>
     );
   }
 
+  const totalInputBytes = filesList.reduce((acc, f) => acc + (f.size || 0), 0);
+
   // Calculate size change percentage if output size is known
   let savingsPercent = null;
-  if (outputSize && selectedFile?.size) {
-    const diff = selectedFile.size - outputSize;
-    savingsPercent = Math.round((diff / selectedFile.size) * 100);
+  if (outputSize && totalInputBytes) {
+    const diff = totalInputBytes - outputSize;
+    savingsPercent = Math.round((diff / totalInputBytes) * 100);
   }
 
   return (
     <div className="card custom-card p-4 shadow-sm mb-4 text-start">
       <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-light">
         <h4 className="card-title h6 mb-0 fw-bold d-flex align-items-center gap-2">
-          <FiCheckSquare className="text-primary" size={18} />
-          <span>Asset Inspector &amp; Diagnostics</span>
+          {count > 1 ? <FiLayers className="text-primary" size={18} /> : <FiCheckSquare className="text-primary" size={18} />}
+          <span>{count > 1 ? `Batch Inspector (${count} Images)` : 'Asset Inspector & Diagnostics'}</span>
         </h4>
         <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 smaller">
-          Verified Asset
+          {count > 1 ? `${count} Images Queued` : 'Verified Asset'}
         </span>
       </div>
 
@@ -78,28 +86,48 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
       <div className="info-block mb-3 p-3 bg-light rounded-3 border">
         <div className="d-flex align-items-center justify-content-between mb-2">
           <span className="text-uppercase small fw-bold text-primary tracking-wider" style={{ fontSize: '0.72rem' }}>
-            Source Asset
+            {count > 1 ? 'Batch Payload' : 'Source Asset'}
           </span>
           <span className="badge bg-white text-dark border px-2 py-0.5 fw-bold" style={{ fontSize: '0.7rem' }}>
-            {selectedFile.extension}
+            {count > 1 ? `${count} Files` : primaryFile.extension}
           </span>
         </div>
-        <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
-          <span className="text-muted small">File Name:</span>
-          <span className="fw-semibold text-dark small text-truncate ms-2" style={{ maxWidth: '210px' }} title={selectedFile.name}>
-            {selectedFile.name}
-          </span>
-        </div>
-        <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
-          <span className="text-muted small">MIME Type:</span>
-          <span className="text-dark small font-monospace" style={{ fontSize: '0.78rem' }}>
-            {selectedFile.rawType || selectedFile.type}
-          </span>
-        </div>
-        <div className="d-flex justify-content-between py-1">
-          <span className="text-muted small">Native Size:</span>
-          <span className="text-dark small fw-bold">{selectedFile.formattedSize}</span>
-        </div>
+
+        {count > 1 ? (
+          <div>
+            <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+              <span className="text-muted small">Total Files:</span>
+              <span className="fw-bold text-dark small">{count} Images (Max 10)</span>
+            </div>
+            <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+              <span className="text-muted small">Combined Size:</span>
+              <span className="text-dark small fw-bold">{formatBytes(totalInputBytes)}</span>
+            </div>
+            <div className="d-flex justify-content-between py-1">
+              <span className="text-muted small">Processing:</span>
+              <span className="text-success small fw-semibold">Multi-Threaded Server</span>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+              <span className="text-muted small">File Name:</span>
+              <span className="fw-semibold text-dark small text-truncate ms-2" style={{ maxWidth: '210px' }} title={primaryFile.name}>
+                {primaryFile.name}
+              </span>
+            </div>
+            <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+              <span className="text-muted small">MIME Type:</span>
+              <span className="text-dark small font-monospace" style={{ fontSize: '0.78rem' }}>
+                {primaryFile.rawType || primaryFile.type}
+              </span>
+            </div>
+            <div className="d-flex justify-content-between py-1">
+              <span className="text-muted small">Native Size:</span>
+              <span className="text-dark small fw-bold">{primaryFile.formattedSize}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Output Configuration Inspection */}
@@ -109,29 +137,20 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
             Target Specification
           </span>
           <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5 fw-bold" style={{ fontSize: '0.7rem' }}>
-            {isCompressMode ? `${selectedFile.extension} (OPTIMIZED)` : targetFormat}
+            {isCompressMode ? 'COMPRESSED' : targetFormat}
           </span>
         </div>
         <div className="d-flex justify-content-between py-1 border-bottom border-light-subtle">
           <span className="text-muted small">Pipeline Mode:</span>
           <span className="text-dark small fw-medium">
-            {isCompressMode ? 'Adaptive Size Compression' : 'Multi-Format Transcoding'}
+            {count > 1 ? (isCompressMode ? 'Batch Compression' : 'Batch Transcoding') : (isCompressMode ? 'Adaptive Compression' : 'Multi-Format Transcoding')}
           </span>
         </div>
         <div className="d-flex justify-content-between py-1">
-          <span className="text-muted small">Result Size:</span>
-          {outputSize ? (
-            <div className="d-flex align-items-center gap-1.5">
-              <span className="text-dark small fw-bold">{formatBytes(outputSize)}</span>
-              {savingsPercent !== null && (
-                <span className={`badge ${savingsPercent >= 0 ? 'bg-success text-white' : 'bg-secondary text-white'}`} style={{ fontSize: '0.68rem' }}>
-                  {savingsPercent >= 0 ? `-${savingsPercent}%` : `+${Math.abs(savingsPercent)}%`}
-                </span>
-              )}
-            </div>
-          ) : (
-            <span className="text-muted small italic">Calculated upon processing</span>
-          )}
+          <span className="text-muted small">Bundle Output:</span>
+          <span className="text-dark small fw-semibold">
+            {count > 1 ? 'ZIP Archive + Individual' : 'Direct Download'}
+          </span>
         </div>
       </div>
 
@@ -139,11 +158,11 @@ function FileInfo({ selectedFile, targetFormat = 'WEBP', isCompressMode = false,
       <div className="d-flex align-items-center justify-content-between text-muted smaller pt-1">
         <span className="d-inline-flex align-items-center gap-1">
           <FiShield className="text-primary" size={13} />
-          <span>Sandboxed In-Memory Processing</span>
+          <span>In-Memory Safe Processing</span>
         </span>
         <span className="d-inline-flex align-items-center gap-1 text-success">
           <FiCpu size={13} />
-          <span>GPU/CPU Accelerated</span>
+          <span>High-Speed Native GD</span>
         </span>
       </div>
     </div>

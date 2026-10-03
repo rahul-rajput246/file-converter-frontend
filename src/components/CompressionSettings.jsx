@@ -10,13 +10,19 @@ const getDefaultTargetSize = (bytes) => {
   return Math.max(10, Math.round((kb * 0.8) || 50));
 };
 
-function CompressionSettings({ selectedFile, onCompressTrigger }) {
+function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigger }) {
+  const filesList = Array.isArray(selectedFiles) && selectedFiles.length > 0 
+    ? selectedFiles 
+    : (selectedFile ? [selectedFile] : []);
+  const count = filesList.length;
+  const primaryFile = filesList[0] || selectedFile;
+
   const [compressMode, setCompressMode] = useState('target'); // 'target' | 'quality'
-  const [targetSize, setTargetSize] = useState(() => getDefaultTargetSize(selectedFile?.size));
+  const [targetSize, setTargetSize] = useState(() => getDefaultTargetSize(primaryFile?.size));
   const [unit, setUnit] = useState('KB');
   const [qualityLevel, setQualityLevel] = useState('medium');
 
-  const origBytes = selectedFile?.size || 0;
+  const origBytes = primaryFile?.size || 0;
 
   const targetBytes = unit === 'MB' ? targetSize * 1024 * 1024 : targetSize * 1024;
   const estimatedSavingsPercent = (origBytes > 0 && origBytes > targetBytes)
@@ -261,8 +267,8 @@ function CompressionSettings({ selectedFile, onCompressTrigger }) {
         <FiMinimize2 size={16} />
         <span>
           {compressMode === 'target'
-            ? `Compress File to ${targetSize} ${unit}`
-            : `Compress File (${qualityLevel.toUpperCase()})`}
+            ? `Compress ${count > 1 ? count + ' Images' : 'File'} to ${targetSize} ${unit}`
+            : `Compress ${count > 1 ? count + ' Images' : 'File'} (${qualityLevel.toUpperCase()})`}
         </span>
       </button>
     </div>

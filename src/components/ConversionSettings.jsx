@@ -20,8 +20,13 @@ const FORMAT_METADATA = {
   TXT: { label: 'TXT', desc: 'Extracted Plain Text Document', tag: 'Text' },
 };
 
-function ConversionSettings({ selectedFile, onConvertTrigger }) {
-  const fileExt = selectedFile?.extension || 'FILE';
+function ConversionSettings({ selectedFile, selectedFiles = [], onConvertTrigger }) {
+  const filesList = Array.isArray(selectedFiles) && selectedFiles.length > 0 
+    ? selectedFiles 
+    : (selectedFile ? [selectedFile] : []);
+  const count = filesList.length;
+  const primaryFile = filesList[0] || selectedFile;
+  const fileExt = primaryFile?.extension || 'FILE';
   const availableOptions = getTargetConversionOptions(fileExt);
 
   // Store user explicit choice or default
@@ -37,7 +42,8 @@ function ConversionSettings({ selectedFile, onConvertTrigger }) {
     if (onConvertTrigger) {
       onConvertTrigger({
         sourceFormat: fileExt,
-        targetFormat: activeTarget
+        targetFormat: activeTarget,
+        count: count
       });
     }
   };
@@ -138,7 +144,11 @@ function ConversionSettings({ selectedFile, onConvertTrigger }) {
         onClick={handleConvertClick}
       >
         <FiRefreshCw size={18} />
-        <span>Convert to {activeTarget}</span>
+        <span>
+          {count > 1 
+            ? `Convert ${count} Images to ${activeTarget} (Fast Batch)` 
+            : `Convert to ${activeTarget}`}
+        </span>
       </button>
     </div>
   );
