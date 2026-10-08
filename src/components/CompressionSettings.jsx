@@ -1,13 +1,11 @@
-import { useState } from 'react';
-import { FiMinimize2, FiTarget, FiSliders, FiCheck, FiArrowRight, FiShield } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiMinimize2, FiTarget, FiSliders, FiCheck, FiArrowRight, FiShield, FiAlertTriangle } from 'react-icons/fi';
 import { formatBytes } from '../services/fileService';
 
 const getDefaultTargetSize = (bytes) => {
-  const kb = Math.round((bytes || 0) / 1024);
-  if (kb > 2000) return Math.round(kb * 0.6);
-  if (kb > 500) return Math.round(kb * 0.7);
-  if (kb > 100) return Math.round(kb * 0.75);
-  return Math.max(20, Math.round((kb * 0.8) || 100));
+  const origKb = Math.max(1, Math.round((bytes || 0) / 1024));
+  const half = Math.round(origKb * 0.5);
+  return Math.max(1, Math.min(half, Math.max(1, origKb - 1)));
 };
 
 function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigger }) {
@@ -23,29 +21,74 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
   const [qualityLevel, setQualityLevel] = useState('medium');
 
   const origBytes = primaryFile?.size || 0;
+  const origKb = Math.max(1, Math.round(origBytes / 1024));
+
+  // Sync target size whenever file changes
+  useEffect(() => {
+    if (origBytes > 0) {
+      setTargetSize(getDefaultTargetSize(origBytes));
+      setUnit('KB');
+    }
+  }, [origBytes, primaryFile?.name]);
 
   const targetBytes = unit === 'MB' ? targetSize * 1024 * 1024 : targetSize * 1024;
+  const targetKb = unit === 'MB' ? targetSize * 1024 : targetSize;
+  const isTargetLargerThanOrig = origBytes > 0 && targetBytes >= origBytes;
+
   const estimatedSavingsPercent = (origBytes > 0 && origBytes > targetBytes)
     ? Math.round((1 - targetBytes / origBytes) * 100)
     : null;
 
-  // Quick preset sizes
+  // Dynamic preset sizes strictly proportional to the uploaded file
   const presetSizes = [
-    { label: '75%', value: Math.max(20, Math.round((origBytes / 1024) * 0.75) || 150), unit: 'KB', hint: 'Near lossless' },
-    { label: '50%', value: Math.max(20, Math.round((origBytes / 1024) * 0.5) || 100), unit: 'KB', hint: 'Balanced crisp' },
-    { label: '100 KB', value: 100, unit: 'KB', hint: 'Fast web' },
-    { label: '50 KB', value: 50, unit: 'KB', hint: 'Compact' },
+    {
+      label: '75% Size',
+      sub: '-25% reduction',
+      value: Math.max(1, Math.round(origKb * 0.75)),
+      unit: 'KB',
+      hint: 'Ultra crisp & sharp'
+    },
+    {
+      label: '50% Size',
+      sub: '-50% reduction',
+      value: Math.max(1, Math.round(origKb * 0.5)),
+      unit: 'KB',
+      hint: 'Optimal balance'
+    },
+    {
+      label: '25% Size',
+      sub: '-75% reduction',
+      value: Math.max(1, Math.round(origKb * 0.25)),
+      unit: 'KB',
+      hint: 'High storage savings'
+    },
+    {
+      label: '10% Size',
+      sub: '-90% reduction',
+      value: Math.max(1, Math.round(origKb * 0.1)),
+      unit: 'KB',
+      hint: 'Maximum compression'
+    },
   ];
 
   const handleCompressClick = () => {
     if (!onCompressTrigger) return;
 
     if (compressMode === 'target') {
-      const parsed = parseFloat(targetSize) || getDefaultTargetSize(selectedFile?.size);
-      const targetKb = unit === 'MB' ? parsed * 1024 : parsed;
+      let parsed = parseFloat(targetSize);
+      if (isNaN(parsed) || parsed <= 0) {
+        parsed = getDefaultTargetSize(origBytes);
+      }
+      let finalKb = unit === 'MB' ? parsed * 1024 : parsed;
+
+      // Strict guarantee: target size MUST be less than original file size
+      if (origKb > 1 && finalKb >= origKb) {
+        finalKb = Math.max(1, Math.round(origKb * 0.85));
+      }
+
       onCompressTrigger({
         mode: 'target',
-        targetSizeKb: Math.max(1, Math.round(targetKb)),
+        targetSizeKb: Math.max(1, Math.round(finalKb)),
         level: 'medium'
       });
     } else {
@@ -95,10 +138,12 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
         </button>
       </div>
 
-      {/* Fidelity Guarantee Notice */}
+      {/* Fidelity & Sharpness Guarantee Notice */}
       <div className="alert alert-info py-2 px-3 d-flex align-items-center gap-2 mb-3 border-0 bg-info-subtle text-info-emphasis rounded-3 small">
-        <FiShield className="flex-shrink-0" size={16} />
-        <span>Original 1:1 image dimensions and sharpness are preserved with zero blurring.</span>
+        <FiShield className="flex-shrink-0 text-primary" size={18} />
+        <span>
+          <strong>Zero Blur Guarantee:</strong> Full 1:1 image dimensions and sharpness are maintained. File size strictly reduces below original.
+        </span>
       </div>
 
       {/* Mode 1: Quality Presets */}
@@ -111,18 +156,18 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
             {[
               {
                 id: 'low',
-                title: 'Low Compression (Highest Quality)',
-                desc: '88% Quality. Preserves crystal clear fidelity and original sharp details with gentle size reduction.'
+                title: 'Low Compression (Highest Visual Quality)',
+                desc: '88% Quality. Preserves 100% crystal clear edges and colors with gentle file size reduction.'
               },
               {
                 id: 'medium',
-                title: 'Medium Compression (Balanced)',
-                desc: '80% Quality. Recommended. Optimal file size reduction while keeping images crisp and vibrant.'
+                title: 'Medium Compression (Balanced & Sharp)',
+                desc: '80% Quality. Recommended. Optimal file size reduction while keeping images sharp, crisp, and vibrant.'
               },
               {
                 id: 'high',
-                title: 'High Compression (Maximum Savings)',
-                desc: '70% Quality. Strong compression for bandwidth savings while maintaining full dimensions and clarity.'
+                title: 'High Compression (Maximum Size Reduction)',
+                desc: '70% Quality. Strongest byte reduction while maintaining full original resolution without blur.'
               },
             ].map((preset) => {
               const isSelected = qualityLevel === preset.id;
@@ -153,7 +198,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
           {/* Quick preset buttons */}
           <div className="mb-3">
             <label className="form-label text-muted small fw-semibold text-uppercase mb-2">
-              Quick Target Presets
+              Select Target Reduction Preset
             </label>
             <div className="row g-2">
               {presetSizes.map((preset) => {
@@ -173,6 +218,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
                       }}
                     >
                       <div className="fw-bold">{preset.label}</div>
+                      <div className="small fw-semibold">{preset.value} {preset.unit}</div>
                       <div className={`smaller ${isSelected ? 'text-white-50' : 'text-muted'}`}>
                         {preset.hint}
                       </div>
@@ -202,7 +248,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
                 id="customTargetSize"
                 type="number"
                 min="1"
-                max={unit === 'MB' ? 100 : 102400}
+                max={unit === 'MB' ? Math.max(1, (origBytes / (1024 * 1024)).toFixed(1)) : Math.max(1, origKb)}
                 step={unit === 'MB' ? '0.1' : '5'}
                 className="form-control fw-bold fs-5 border-start-0"
                 value={targetSize}
@@ -210,7 +256,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
                 onBlur={() => {
                   const val = parseFloat(targetSize);
                   if (isNaN(val) || val <= 0) {
-                    setTargetSize(getDefaultTargetSize(selectedFile?.size));
+                    setTargetSize(getDefaultTargetSize(origBytes));
                   }
                 }}
                 placeholder="e.g. 100"
@@ -223,24 +269,37 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
                 aria-label="Target Size Unit"
               >
                 <option value="KB">KB</option>
-                <option value="MB">MB</option>
+                {origKb >= 1024 && <option value="MB">MB</option>}
               </select>
             </div>
 
-            {/* Interactive Slider */}
+            {/* Warning if user typed a target size >= original size */}
+            {isTargetLargerThanOrig && (
+              <div className="alert alert-warning py-1.5 px-3 small d-flex align-items-center gap-2 mb-2 rounded-2">
+                <FiAlertTriangle className="flex-shrink-0 text-warning-emphasis" size={15} />
+                <span>
+                  Target ({targetSize} {unit}) is larger than the original file ({formatBytes(origBytes)}). It will be adjusted so the file reduces in size.
+                </span>
+              </div>
+            )}
+
+            {/* Interactive Slider constrained strictly below original size */}
             <input
               type="range"
               className="form-range custom-range mt-2"
-              min="10"
-              max={unit === 'MB' ? 20 : 2000}
-              step={unit === 'MB' ? 0.5 : 20}
-              value={Math.min(unit === 'MB' ? 20 : 2000, parseFloat(targetSize) || 100)}
+              min="1"
+              max={unit === 'MB' ? Math.max(0.1, Number((origBytes / (1024 * 1024) * 0.95).toFixed(2))) : Math.max(2, Math.round(origKb * 0.95))}
+              step={unit === 'MB' ? 0.05 : 1}
+              value={Math.min(
+                unit === 'MB' ? Math.max(0.1, Number((origBytes / (1024 * 1024) * 0.95).toFixed(2))) : Math.max(2, Math.round(origKb * 0.95)),
+                parseFloat(targetSize) || 1
+              )}
               onChange={(e) => setTargetSize(parseFloat(e.target.value))}
               aria-label="Adjust target size"
             />
             <div className="d-flex justify-content-between text-muted smaller mt-1">
-              <span>{unit === 'MB' ? '1 MB' : '10 KB'} (High compression)</span>
-              <span>{unit === 'MB' ? '20 MB' : '2000 KB'} (High quality)</span>
+              <span>1 {unit} (Maximum compression)</span>
+              <span>{unit === 'MB' ? `${(origBytes / (1024 * 1024) * 0.95).toFixed(1)} MB` : `${Math.round(origKb * 0.95)} KB`} (Light compression)</span>
             </div>
           </div>
 
