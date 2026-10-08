@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { FiMinimize2, FiTarget, FiSliders, FiCheck, FiArrowRight } from 'react-icons/fi';
+import { FiMinimize2, FiTarget, FiSliders, FiCheck, FiArrowRight, FiShield } from 'react-icons/fi';
 import { formatBytes } from '../services/fileService';
 
 const getDefaultTargetSize = (bytes) => {
   const kb = Math.round((bytes || 0) / 1024);
-  if (kb > 1000) return Math.max(100, Math.round(kb * 0.4));
-  if (kb > 200) return Math.max(50, Math.round(kb * 0.5));
-  if (kb > 50) return Math.max(20, Math.round(kb * 0.6));
-  return Math.max(10, Math.round((kb * 0.8) || 50));
+  if (kb > 2000) return Math.round(kb * 0.6);
+  if (kb > 500) return Math.round(kb * 0.7);
+  if (kb > 100) return Math.round(kb * 0.75);
+  return Math.max(20, Math.round((kb * 0.8) || 100));
 };
 
 function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigger }) {
@@ -17,7 +17,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
   const count = filesList.length;
   const primaryFile = filesList[0] || selectedFile;
 
-  const [compressMode, setCompressMode] = useState('target'); // 'target' | 'quality'
+  const [compressMode, setCompressMode] = useState('quality'); // 'quality' (default) | 'target'
   const [targetSize, setTargetSize] = useState(() => getDefaultTargetSize(primaryFile?.size));
   const [unit, setUnit] = useState('KB');
   const [qualityLevel, setQualityLevel] = useState('medium');
@@ -31,10 +31,10 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
 
   // Quick preset sizes
   const presetSizes = [
-    { label: '50 KB', value: 50, unit: 'KB', hint: 'Govt forms & ID' },
-    { label: '100 KB', value: 100, unit: 'KB', hint: 'Portals & upload' },
-    { label: '200 KB', value: 200, unit: 'KB', hint: 'Balanced web' },
-    { label: '500 KB', value: 500, unit: 'KB', hint: 'Email & sharing' },
+    { label: '75%', value: Math.max(20, Math.round((origBytes / 1024) * 0.75) || 150), unit: 'KB', hint: 'Near lossless' },
+    { label: '50%', value: Math.max(20, Math.round((origBytes / 1024) * 0.5) || 100), unit: 'KB', hint: 'Balanced crisp' },
+    { label: '100 KB', value: 100, unit: 'KB', hint: 'Fast web' },
+    { label: '50 KB', value: 50, unit: 'KB', hint: 'Compact' },
   ];
 
   const handleCompressClick = () => {
@@ -65,24 +65,12 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
           <span>Compression Mode</span>
         </h4>
         <span className="badge bg-success-subtle text-success">
-          {compressMode === 'target' ? 'Target Size Mode' : 'Quality Presets'}
+          {compressMode === 'quality' ? 'Quality Presets (Sharp)' : 'Target Size Mode'}
         </span>
       </div>
 
       {/* Mode Switcher Tabs */}
       <div className="d-flex p-1 bg-light rounded-3 mb-4 border">
-        <button
-          type="button"
-          className={`btn flex-fill py-2 d-flex align-items-center justify-content-center gap-2 border-0 fw-semibold ${
-            compressMode === 'target' ? 'btn-white shadow-sm text-primary' : 'text-muted'
-          }`}
-          onClick={() => setCompressMode('target')}
-        >
-          <FiTarget size={16} />
-          <span>Target File Size</span>
-          <span className="badge bg-primary-subtle text-primary smaller ms-1">Popular</span>
-        </button>
-
         <button
           type="button"
           className={`btn flex-fill py-2 d-flex align-items-center justify-content-center gap-2 border-0 fw-semibold ${
@@ -92,10 +80,74 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
         >
           <FiSliders size={16} />
           <span>Quality Presets</span>
+          <span className="badge bg-primary-subtle text-primary smaller ms-1">Recommended</span>
+        </button>
+
+        <button
+          type="button"
+          className={`btn flex-fill py-2 d-flex align-items-center justify-content-center gap-2 border-0 fw-semibold ${
+            compressMode === 'target' ? 'btn-white shadow-sm text-primary' : 'text-muted'
+          }`}
+          onClick={() => setCompressMode('target')}
+        >
+          <FiTarget size={16} />
+          <span>Target File Size</span>
         </button>
       </div>
 
-      {/* Mode 1: Exact Target Size */}
+      {/* Fidelity Guarantee Notice */}
+      <div className="alert alert-info py-2 px-3 d-flex align-items-center gap-2 mb-3 border-0 bg-info-subtle text-info-emphasis rounded-3 small">
+        <FiShield className="flex-shrink-0" size={16} />
+        <span>Original 1:1 image dimensions and sharpness are preserved with zero blurring.</span>
+      </div>
+
+      {/* Mode 1: Quality Presets */}
+      {compressMode === 'quality' && (
+        <div className="quality-presets-section mb-4">
+          <label className="form-label text-muted small fw-semibold text-uppercase mb-2">
+            Select Quality Level
+          </label>
+          <div className="d-flex flex-column gap-2">
+            {[
+              {
+                id: 'low',
+                title: 'Low Compression (Highest Quality)',
+                desc: '88% Quality. Preserves crystal clear fidelity and original sharp details with gentle size reduction.'
+              },
+              {
+                id: 'medium',
+                title: 'Medium Compression (Balanced)',
+                desc: '80% Quality. Recommended. Optimal file size reduction while keeping images crisp and vibrant.'
+              },
+              {
+                id: 'high',
+                title: 'High Compression (Maximum Savings)',
+                desc: '70% Quality. Strong compression for bandwidth savings while maintaining full dimensions and clarity.'
+              },
+            ].map((preset) => {
+              const isSelected = qualityLevel === preset.id;
+              return (
+                <div
+                  key={preset.id}
+                  className={`p-3 rounded-3 border cursor-pointer transition-all ${
+                    isSelected ? 'border-primary bg-primary-subtle' : 'bg-white'
+                  }`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setQualityLevel(preset.id)}
+                >
+                  <div className="d-flex align-items-center justify-content-between mb-1">
+                    <span className="fw-bold text-dark">{preset.title}</span>
+                    {isSelected && <FiCheck className="text-primary fw-bold" size={18} />}
+                  </div>
+                  <div className="text-muted small">{preset.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Mode 2: Exact Target Size */}
       {compressMode === 'target' && (
         <div className="target-size-section">
           {/* Quick preset buttons */}
@@ -187,7 +239,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
               aria-label="Adjust target size"
             />
             <div className="d-flex justify-content-between text-muted smaller mt-1">
-              <span>{unit === 'MB' ? '1 MB' : '10 KB'} (Max compression)</span>
+              <span>{unit === 'MB' ? '1 MB' : '10 KB'} (High compression)</span>
               <span>{unit === 'MB' ? '20 MB' : '2000 KB'} (High quality)</span>
             </div>
           </div>
@@ -212,52 +264,6 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
         </div>
       )}
 
-      {/* Mode 2: Quality Presets */}
-      {compressMode === 'quality' && (
-        <div className="quality-presets-section mb-4">
-          <label className="form-label text-muted small fw-semibold text-uppercase mb-2">
-            Select Quality Level
-          </label>
-          <div className="d-flex flex-column gap-2">
-            {[
-              {
-                id: 'low',
-                title: 'Low Compression (Highest Quality)',
-                desc: 'Preserves maximum clarity and colors with subtle file reduction.'
-              },
-              {
-                id: 'medium',
-                title: 'Medium Compression (Balanced)',
-                desc: 'Recommended. Good size reduction while keeping images sharp.'
-              },
-              {
-                id: 'high',
-                title: 'High Compression (Smallest Size)',
-                desc: 'Maximum size reduction, best for speed and tight bandwidth.'
-              },
-            ].map((preset) => {
-              const isSelected = qualityLevel === preset.id;
-              return (
-                <div
-                  key={preset.id}
-                  className={`p-3 rounded-3 border cursor-pointer transition-all ${
-                    isSelected ? 'border-primary bg-primary-subtle' : 'bg-white'
-                  }`}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setQualityLevel(preset.id)}
-                >
-                  <div className="d-flex align-items-center justify-content-between mb-1">
-                    <span className="fw-bold text-dark">{preset.title}</span>
-                    {isSelected && <FiCheck className="text-primary fw-bold" size={18} />}
-                  </div>
-                  <div className="text-muted small">{preset.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Action Button */}
       <button
         type="button"
@@ -267,7 +273,7 @@ function CompressionSettings({ selectedFile, selectedFiles = [], onCompressTrigg
         <FiMinimize2 size={16} />
         <span>
           {compressMode === 'target'
-            ? `Compress ${count > 1 ? count + ' Images' : 'File'} to ${targetSize} ${unit}`
+            ? `Compress ${count > 1 ? count + ' Images' : 'File'} to ~${targetSize} ${unit}`
             : `Compress ${count > 1 ? count + ' Images' : 'File'} (${qualityLevel.toUpperCase()})`}
         </span>
       </button>
