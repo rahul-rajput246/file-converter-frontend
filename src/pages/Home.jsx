@@ -191,7 +191,7 @@ function Home() {
       } else if (data.filename) {
         const newEntry = {
           id: 'f-' + Date.now(),
-          file: data.filename,
+          file: selectedFiles[0]?.name || data.filename,
           conversion: compressData.mode === 'target'
             ? `Compress → ${compressData.targetSizeKb} KB`
             : `Compress (${(compressData.level || 'medium').toUpperCase()})`,

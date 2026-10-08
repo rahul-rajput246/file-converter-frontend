@@ -502,7 +502,7 @@ export const compressFilesParallel = async (filesList, options = 'medium', onPro
           processed_size: res.processed_size,
           size: res.processed_size,
           filename: res.filename,
-          format: res.format,
+          format: res.format || getFileExtension(item.name || fileInstance?.name || '') || 'jpg',
           compression_level: res.compression_level,
           download_url: res.download_url,
           success: true,
@@ -540,10 +540,14 @@ export const compressFilesParallel = async (filesList, options = 'medium', onPro
   const successfulFiles = results.filter((r) => r && r.success && r.filename);
   let zipData = null;
   if (successfulFiles.length > 1) {
-    const zipPayload = successfulFiles.map((f) => ({
-      filename: f.filename,
-      original_name: (f.original_name || 'file').replace(/\.[^.]+$/, '') + '_compressed.' + (f.format || 'jpg'),
-    }));
+    const zipPayload = successfulFiles.map((f) => {
+      const origExt = getFileExtension(f.original_name || '') || 'jpg';
+      const outExt = f.format || origExt;
+      return {
+        filename: f.filename,
+        original_name: (f.original_name || 'file').replace(/\.[^.]+$/, '') + '_compressed.' + outExt,
+      };
+    });
     zipData = await createZipArchive(zipPayload);
   }
 
